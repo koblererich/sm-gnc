@@ -1,0 +1,652 @@
+\documentclass{article} % For LaTeX2e
+\usepackage{iclr2023_conference,times}
+
+% Optional math commands from https://github.com/goodfeli/dlbook_notation.
+\input{math_commands.tex}
+
+\usepackage{hyperref}
+\usepackage{url}
+
+\usepackage{algorithm}
+% \usepackage[noend]{algpseudocode} 
+
+% For theorems and such
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsthm}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% custom commands
+\newcommand{\todo}[1]{{\color{red}\textbf{TODO:}``#1''}}
+% \newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\renewcommand{\P}{\mathbb{P}}
+\newcommand{\C}{\mathcal{C}}
+\renewcommand{\L}{\mathrm{L}}
+\newcommand{\dx}{\mathrm{d}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\Z}{\mathcal{Z}}
+\newcommand{\T}{\mathcal{T}}
+\newcommand{\id}{\mathrm{Id}}
+\newcommand{\norm}[1]{\left\Vert#1\right\Vert}
+\newcommand{\scal}[2]{\left\langle#1,#2\right\rangle}
+\renewcommand{\vec}[1]{\mathbf{#1}}
+\newcommand{\diameter}{\mathrm{diam}}
+\newcommand{\prox}{\mathrm{prox}}
+\newcommand{\proj}{\mathrm{proj}}
+\newcommand{\tmin}{t_\mathrm{min}}
+\newcommand{\tmax}{t_\mathrm{max}}
+% \newcommand{\hatt}{\widehat{t}}
+\def\hatt{{\widehat{t}}}
+\newcommand{\tminh}{\hatt_\mathrm{min}}
+\newcommand{\tmaxh}{\hatt_\mathrm{max}}
+
+% \newcommand{\E}{\mathbb{E}}
+\newcommand{\dist}[1]{\mathcal{P}_{#1}}
+\newcommand{\pdf}[1]{p_{#1}}
+\newcommand{\g}{\vert}
+\newcommand{\normal}{\mathcal{N}}
+
+\newcommand{\VP}{\mathrm{VP}}
+\newcommand{\VE}{\mathrm{VE}}
+
+
+\title{On Links between Diffusion Models, Graduated non-convexity, and Variational Networks}
+
+% Authors must not appear in the submitted version. They should be hidden
+% as long as the \iclrfinalcopy macro remains commented out below.
+% Non-anonymous submissions will be rejected without review.
+
+\author{Antiquus S.~Hippocampus, Natalia Cerebro \& Amelie P. Amygdale \thanks{ Use footnote for providing further information
+about author (webpage, alternative address)---\emph{not} for acknowledging
+funding agencies.  Funding acknowledgements go at the end of the paper.} \\
+Department of Computer Science\\
+Cranberry-Lemon University\\
+Pittsburgh, PA 15213, USA \\
+\texttt{\{hippo,brain,jen\}@cs.cranberry-lemon.edu} \\
+\And
+Ji Q. Ren \& Yevgeny LeNet \\
+Department of Computational Neuroscience \\
+University of the Witwatersrand \\
+Joburg, South Africa \\
+\texttt{\{robot,net\}@wits.ac.za} \\
+\AND
+Coauthor \\
+Affiliation \\
+Address \\
+\texttt{email}
+}
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to \LaTeX{} to determine where to break
+% the lines. Using \AND forces a linebreak at that point. So, if \LaTeX{}
+% puts 3 of 4 authors names on the first line, and the last on the second
+% line, try using \AND instead of \And before the third author name.
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+%\iclrfinalcopy % Uncomment for camera-ready version, but NOT for submission.
+\begin{document}
+
+
+\maketitle
+
+\begin{abstract}
+This paper proposes a novel prior for modeling the statistics of natural images, which is an important pillar for Bayesian modeling and inference for image reconstruction. 
+Our main contribution is the introduction of a scale space of image densities which is obtained by performing a linear diffusion in the space of images~\footnote{Note that with the space of images we mean the high-dimensional space with a dimension equal to the number of images pixels.}, with scale space parameter~$t$. On this scale space, we use the score matching technique to learn a family of parametric prior models indexed by continuous scale-space parameter $t$. In the negative log domain, the family of learned priors are represented by gradually more convex energies which is advantageous for efficient inference or sampling. It turns out that our formulation generalizes several recently proposed approaches including the trained nonlinear reaction diffusion and score-based generative models within a unified formulation.
+\end{abstract}
+
+\section{Introduction}
+
+Targets:
+\begin{itemize}
+    \item graduated non-convexity view of denoising SM and diffusion models
+    \item alternating minimization of $x$ and $\alpha$ equivalent to fixed scheme
+    \item learning the interpolation points is equivalent to TNRDs and VNs
+    \item enables an unsupervised pre-training
+    \item just a few steps are required at inferance
+\end{itemize}
+
+% -----------------------------------------------------------------------------------------------------
+\section{Background}
+
+\begin{itemize}
+    \item diffusion based model (how do they incorporate the smoothing parameter)
+    \item TNRDs and VNs
+    \item plug and play priors
+\end{itemize}
+
+\subsection{Variational Networks}
+Introduction and definition of unrolling approach in particular for variational networks.
+
+\subsection{Scale Spaces}
+
+\subsection{Score Matching}
+
+What do the others do with the $t$ parameter.
+
+variational analysis of denoising diffusion models~\cite{HuLi21}
+
+% -----------------------------------------------------------------------------------------------------
+\section{A Graduated Non-convexity View of Denoising Diffusion-based Models} \label{sec:gnc}
+Let $(\X,\mathfrak{F},\P)$ be a complete probability space on a compact set~$\X\subset\R^d$ with sigma algebra~$\mathfrak{F}$ and probability measure~$\P$.
+We further assume an absolutely continuous probability measure with corresponding probability density function~$\pdf{\rvx}\in \C_0(\X,[0,\infty))$.
+Later, we will also consider a discrete probability measure defined by the empirical distribution of a dataset~$\{\vx_i\}_{i=1}^n\subset\X$ with cardinality~$n\in\N$.
+In addition, we consider variances~$t\in\T$, with the compact interval~$\T=[\tmin,\tmax]$ where $0<\tmin<\tmax<\infty$.
+
+In this setting, we show that noise-conditional score matching (NCSM)~\citep{SoEr19} as well as denoising diffusion probabilistic models (DDPM)~\citep{HoJa20} actually learn a graduated-nonconvexity scheme~\citep{BlZi87}.
+In detail, in both NCSM and DDPM a neural network is trained to learn a conditional score, i.e., the gradient of the log density of the data degraded by additive Gaussian noise with variance~$t$.
+The conditioning is either directly on the variance (NCSM) or a diffusion time (DDPM), which encodes the variance by a one-to-one schedule.
+The key observation is that although the data becomes noisier with increasing~$t$, the corresponding smooth probability density~$\pdf{\rvx\vert\rt}$ gets smoother and its associated energy~$F(\vx,t)=-\log\pdf{\rvx\vert\rt}(\vx,t)$ gets more \emph{convex}, see the left plot in Figure~\ref{fig:gmmOptimization}.
+Next, we prove that in the considered setting there indeed exists a lower bound on the variance~$\widetilde{t}$ such that the energy of the conditional density is convex for~$t\geq\widetilde{t}$.
+
+Before diving into the proof, we first introduce multivariate Gaussians and Gaussian mixture models for completeness.
+Let $G(\bm{\mu},\Sigma)$ denote a multivariate Gaussian probability density with mean~$\bm{\mu}\in\R^d$ and symmetric positive definite covariance matrix~$\Sigma\in\R^{d\times d}$, which reads as
+\[
+G(\bm{\mu},\Sigma)(\vx)=\vert 2\pi\Sigma\vert^{-\frac{1}{2}}\exp\left(-\norm{\vx-\bm{\mu}}_{\Sigma^{-1}}^2\right).
+\]
+\begin{definition}[GMM]
+Let $n\in\N$.
+A Gaussian mixture model (GMM) consisting of $n$ weighted normal distributions is defined as
+\[
+p = \sum_{i=1}^n w_i G(\vx_i,\Sigma_i)
+\]
+with mean vectors $\{\vx_i\}_{i=1}^n\subset\R^d$ and positive semidefinite covariance matrices~$\{\Sigma_i\}_{i=1}^n\subset\R^{d\times d}$.
+All mixture weights are positive and sum up to~$1$, i.e., $(w_1\ \cdots\ w_n)^\top\in\Delta^n$.
+\end{definition}
+Recall that for $n\to\infty$ a GMM can uniformly approximate any function in~$\C_0$~\citep{NgNg20}.
+Note that an approximation w.r.t.~$\L^p$ also holds for any~$p_X\in\L^p$ for~$p\in[1.\infty)$.
+Consequently, our setting and most practically encountered probability density functions can be well approximated by GMMs.
+Thus, we focus in the following proof on probability density functions induced by a GMM.
+
+\begin{theorem}\label{thm:Fconvex}
+Let~$\X\subset\R^d$ be a bounded set such that diameter~$\diameter(\X)<\infty$ and consider a GMM of the form
+\[
+p(\vx) = \sum_{i=1}^n w_i G(\vx_i,\Sigma_i)(\vx),
+\]
+where $(w_1\ \cdots \ w_n)^\top\in\Delta^n$. Assume~$\{\vx_i\}_{i=1}^n\subset\X$.
+Then there exists a smoothing parameter~$\widetilde{t}\in(0,\infty)$ such that the smoothed energy
+\[
+F(\vx,t)\coloneqq -\log \big( (p \ast G(\vec{0}, t\id))(\vx)\big)
+\]
+is \emph{convex} w.r.t.~$\vx$ for all~$t\geq\widetilde{t}$.
+\end{theorem}
+\begin{corollary}
+Theorem~\ref{thm:Fconvex} also holds if an empirical discrete probability measure of a dataset~$\{\vx_i\}_{i=1}^n\subset\X$, i.e.
+\[
+p = \frac{1}{n}\sum_{i=1}^n\delta_{\vx_i},
+\]
+is considered.
+Here, $\delta_{\vx}$ denotes the Dirac delta measure located at~$\vx$.
+\end{corollary}
+The proofs of the theorem and corollary can be found in the appendix.
+Note that in this paper we only consider the variance exploding setting, however, similar results can be obtained for variance preserving schemes~\citep{SoSo20}. 
+
+The underlying idea of the graduated non-convexity algorithm is to speed up the estimation of the global minimum of a non-convex energy.
+First, this energy is approximated by a one-parameter family of energies that become more convex for increasing~$t$.
+Second, an initial smoothing parameter is selected such that the energy is convex.
+Third, the initial problem is efficiently solved due to increased smoothness and convexity.
+Then, the parameter is reduced such that the energy becomes gradually more non-convex.
+The resulting energy is minimized using the previous solution as initialization and the process is repeated until convergence of the energy corresponding to the smallest parameter.
+
+Comparing NCSM and DDPM to graduated non-convexity, we observe the following similarities:
+First, the score networks also approximate a one-parameter family of the gradient of associated energies.
+Second, the schedule of the smoothing parameter is a priori fixed, for instance, by the variance schedule of an annealed Langevin algorithm~\citep{SoEr19} or the diffusion time~\citep{HoJa20}.
+Finally, as we proved above, there exists a smoothing parameter such that the associated energy becomes convex in most practical cases.
+
+To combine the best of both approaches, we propose the annealed graduated non-convexity scheme described in~\Algref{alg:graduatedNC}.
+In particular, we first fix a decreasing sequence of smoothing parameters~$\{t^i\}_{i=0}^I$ such that the enegy~$F(\vx,t^0)$ is convex.
+Due to smoothness and convexity, we know that the conditional minimal MSE estimator~$\vx^1$ computed by Tweedie's identity~\citep{Ro56,Ef11} is close to the mode of~$F(\vx,t^0)$.
+Then this estimator is gradually refined by reducing the smoothing~$t^{i-1}<t^i$ and updating the MMSE estimator conditioned on the previous result.
+
+\begin{algorithm}[t]
+\caption{Annealed graduated non-convexity scheme for minimizing a smoothed family of energies~$F(\vx,t)$}\label{alg:graduatedNC}
+\textbf{Step 0:} Take~$I\in\N$, define sequence $\{t^i\}_{i=0}^I\subset[\tmin,\tmax]$ s.t.~$t^{i}>t^{i+1}$ and~$F(\vx,t^0)$ convex, $\vx^0\in\X$ \\
+\textbf{Step i:} $(0\leq i< I)$ 
+Approximately minimize current energy~$F(\cdot,t^i)$ using single step
+\[
+\vx^{i+1}=\vx^i-t^i \nabla_\vx F(\vx^i,t^i)
+\] 
+\end{algorithm}
+
+To illustrate the effectiveness of the annealed graduated non-convexity approach, we consider a simple 1D example.
+In particular, we use the smoothed GMM corresponding to the energy
+\begin{align} \label{eq:gmmEx}
+F(x,t)=-\log\left(\tfrac{7}{10}G\left(-\tfrac12,\tfrac{1}{1000}+t\right)(x)+\tfrac{3}{10}G\left(\tfrac12,\tfrac14+t\right)(x)\right)
+\end{align}
+consisting of two components over the domain $x\in[-3,3]$ and $t\in[10^{-4},1]$.
+Note that the addition of $t$ at the variances originates from the convolution of the data density with a Gaussian as considered in Theorem~\ref{thm:Fconvex}.
+This energy is illustrated by the black lines on the left in~\figref{fig:gmmOptimization} for various~$t$.
+As can be seen, increasing the smoothing parameter~$t$ results in smoother and more convex energies.
+The colored lines visualize the trajectories of~\Algref{alg:graduatedNC} for $64$ equally spaces initial samples on~$[-3,3]$ using only~$I=12$ steps.
+Note that all trajectories converge to the global minimum.
+
+The plot on the right in \figref{fig:gmmOptimization} visualizes the rate of trajectories converging to the global minimum as a function of the initial smoothing~$t^0$.
+The trajectories start from~$N=1\ 000$ equally spaced initial positions~$x^0$ on $[-3,3]$.
+The different lines encode how many annealed graduated non-convexity steps~$I$ were performed.
+The lines show that for increasing initial smoothing fewer steps are required such that all trajectories converge to the global minimum.
+
+
+\begin{figure}[t]
+\includegraphics[width=.45\linewidth]{figures/ex_gmm/ex_gmm_opt}\hfill
+\includegraphics[width=.54\linewidth]{figures/ex_gmm/ex_gmm_acc}
+\label{fig:gmmOptimization}
+\caption{Left: Illustration of the 1D example energy~\eqref{eq:gmmEx} using gray lines. The color lines demonstrate graduated non-convexity trajectories using $I=12$ steps on a logarithmic scale from~$t^0=1$ to $t^{10}=10^{-4}$; all trajectories end at the global minimum~$x=-\frac12$.
+Right: Visualization of the rate of trajectories attaining the global minimum using~$N=1\ 000$ equally spaced initial points as a function of the initial smoothing time~$t^0$ for a different number of steps~$I\in\{10,100,1\ 000,10\ 000\}$.
+The larger the initial smoothing parameter~$t^0$, the fewer steps are required to obtain the perfect rate.
+}
+\end{figure}
+
+% -----------------------------------------------------------------------------------------------------
+\section{Learning Priors on the Space of Images}
+In this section, we transfer the insights gained from relations of graduated non-convexity and diffusion-based models to learn priors on the space of images.
+In this space, an image is simply a point in a high-dimensional space with a dimension equal to the number of image pixels.
+
+\subsection{Prior Models for the Space of Image Patches}
+Let $\vx\in\X\subset\R^d$ be an image patch of size~$d=m\times n\times c$, where $m$ represents its height, $n$ its width, and $c$ is the number of feature channels.
+Without loss of generality, we consider the input domain~$\X=[a,b]^d$ for $a<b$ and $a,b\in\R$.
+A popular choice is $a=0$ and $b=1$.
+Note that this domain can be obtained by a simple preprocessing step for many imaging applications.
+The domain of the smoothing parameter is fixed to~$\T=[\tmin,\tmax]$, where~$0<\tmin<\tmax<\infty$.
+We commonly set~$\tmin=10^{-4}$ and $\tmax=1$.
+
+\subsubsection{Extending the Fields of Experts}
+\citet{RoBl09} introduced a simple and versatile prior operating on image patches called fields of experts~(FoE).
+This prior has been successfully applied to various inverse problems in imaging sciences and its essential building blocks are (local) convolutions that extract lower-level features as well as non-linear potential functions.
+In particular, we consider the FoE model
+\[
+R_\mathrm{FoE}(\vx) = \scal{\vec{1}}{\left(\Phi \circ K\right)(\vx)},
+\]
+where the linear operator~$K\colon\R^d\to\R^{d_1}$ extracts~$N_1$ features using 2D convolution kernels~$k_i$ with~$d_1=m\times n\times N_1$.
+The operator~$\Phi\colon\R^{d_1}\to\R^{d_1}$ applies to every feature channel~$k_i(\vx)$ a corresponding pixel-wise parametric non-linear function~$\phi_i\colon\R\to\R$, and the scalar product denotes the sum over all pixels and channels.
+The underlying idea is that every convolution kernel~$k_i$ specializes on a certain pattern and the associated non-linearity~$\phi_i$ describes the corresponding energy, i.e., the negative logarithm of the density.
+The non-linear functions~$\phi_i$ are typically learnable and implemented by simple parametric functions~\citep{RoBl09,ChRa14} or weighted radial basis functions~\citep{ChPo16,KoKl17}.
+Originally, \citet{RoBl09} learned the parameters (convolution kernels, and weights of the potential functions) using contrastive divergence~\citep{Hi02}.
+
+As in the previous section, the distribution of images is gradually smoothed with increasing smoothing parameter~$t$ within the space of images.
+To account for this effect, we propose to extend the FoE model to
+\begin{align}\label{eq:r1}
+R_1(\vx,t) = \scal{\vec{1}}{\left(\Phi_1(\cdot, t) \circ K_1\right)(\vx)},
+\end{align}
+where the non-linear function depends on~$t$, i.e., $\Phi_1\in\C^3(\R^{d_1}\times\T,\R^{d_1})$.
+Consequently, also the pixel-wise non-linear functions of every feature channel~$\phi_{1j}\in\C^3(\R\times\T,\R)$, $j=1,\ldots,N_1$ depend on~$t$. 
+In detail, all~$\phi_{1j}$ are constructed using weighted 2D quartic spline basis functions, which are equally distributed over the input domain to ensure sufficient smoothness for gradient-based learning.
+We refer to the appendix for implementation details regarding the spline-based non-linear functions.
+
+\subsubsection{Increasing Depth}
+Since the prior~\eqref{eq:r1} essentially consists of a single layer, its expressiveness is limited to simple image features.
+To overcome this limitation, we propose to stack multiple convolutions and parametric non-linear layers.
+Then, an FoE-type prior facilitating $L$-layers reads as
+\[
+R_L(\vx,t) = \scal{\vec{1}}{\left(\Phi_L(\cdot,t)\circ K_L\circ\cdots\circ\Phi_1(\cdot, t) \circ K_1\right)(\vx)}.
+\]
+Each convolution~$K_i\colon\R^{d_{i-1}}\to\R^{d_i}$, $i=1,\ldots,L$ performs a linear combination of all input features, thereby enabling the mixing of features as typically performed in convolutional neural networks (CNNs).
+However, we facilitate parametric activation functions that adapt to the corresponding feature channels.
+At every layer~$i\in\{1,\ldots,L\}$ and for any feature channel~$j\in\{1,\ldots,N_i\}$, we employ a 2D parametric point-wise function~$\phi_{ij}\in\C^3(\R\times\T,\R)$ to non-linearly process the features.
+Further details about the parametrization of the activation functions can be found in the appendix.
+This idea follows recent suggestions to facilitate spline-based parametric activation functions in deep CNNs~\citep{OcMe18,AzGu20}.
+
+
+\subsection{Learning Parametric Models on the Space of Image}
+Here, we elaborate on how to fit the parameters of the previously defined regularizers~$R_L\colon\X,\T,\Theta\to\R$ to the negative score of the \emph{joint} density~$\pdf{\rvy,\rt}:\X\times\T\to\R_+$ of the data.
+For our previously defined degradation model, the joint density function reads as
+\begin{align*}
+\pdf{\rvy,\rt}(\vy,t) &= \left(\pdf{\rvx}\ast G(\vec{0},t\id)\right)(\vy) \pdf{\rt}(t)\\
+&\propto \E_{\vx\sim\dist{X}}\left[\exp\left(-\frac{\norm{\vy-\vx}_2^2}{2 t}\right)\right] \pdf{\rt}(t),
+\end{align*}
+where $\pdf{\rt}$ is the prior of the smoothing parameter.
+Then, the objective function of (explicit) score matching is given by
+\begin{align} \label{eq:jsm}
+J_\mathrm{SM}(\theta) = \E_{\vy,t\sim\dist{Y,T}}\left[\tfrac12\norm{\nabla R_L(\vy,t,\theta) -\left(- \nabla\log p_{\rvy,T}(\vy,\rt)\right)}_M^2\right],
+\end{align}
+where $\nabla$ denotes the full gradient of a function and an additional index denotes the gradient w.r.t. only this variable and 
+$M\in\R^{d+1\times d+1}$ is a positive definite block-diagonal matrix, i.e.,
+\[
+M = \begin{pmatrix}
+t\id & \vec{0} \\
+\vec{0}^T & m_t
+\end{pmatrix}.
+\]
+By applying the metric, we obtain
+\begin{align}
+J_\mathrm{SM}(\theta) &=\E_{\vy,t\sim\dist{Y,T}}\left[\tfrac{t}{2}\norm{\nabla_\vy R_L(\vy,t,\theta) -\left(- \nabla_\vy\log p_{Y,T}(\vy,t)\right)}_2^2 \right.\label{eq:jsmParts}\\
+&\hspace{5em}+ \left.\tfrac12\left(\tfrac{\partial}{\partial t}R_L(\vy,t,\theta) -\left(-\tfrac{\partial}{\partial t}\log p_{Y,T}(\vy,t)\right)\right)^2m_t\right].\notag
+\end{align}
+Note that~$J_\mathrm{SM}$ decouples into a score matching objective on noisy images~$\vy$ and the smoothing parameter~$t$; the metric (in particular~$m_T>0$) enables balancing of both terms.
+The scaling of the first term by~$t$ is a common variance reduction technique in denoising score matching~\citep{SoEr19,HuLi21}.
+
+To avoid the computation of the expectation over the true data in the gradient of the joint distribution, we apply denoising score matching to the noisy image term.
+In addition, we replace the score matching objective w.r.t. to~$t$ by its implicit pendant and get
+\begin{align*}
+J_\mathrm{SM}(\theta) &=
+\E_{\vx,\vy,t\sim\dist{X,Y,T}}\left[\tfrac{t}{2}\norm{\nabla_\vy R_L(\vy,t,\theta) -\tfrac{1}{t}(\vy-\vx)}_2^2 + \right.\\
+&\hspace{6em}+ \left. \tfrac{m_t}{2}\left(\left(\tfrac{\partial}{\partial t}R_L(\vy,t,\theta)\right)^2 -2\tfrac{\partial^2}{\partial t^2}R_L(\vy,t,\theta)\right)\right] + C,
+\end{align*}
+where $C$ is an additive constant.
+The proof can be obtained by combining the equivalence proofs of~\citet{Hy05} and~\citet{Vi11}.
+To further simply the objective, we perform the change of variables~$\vy=\vx+\sqrt{t}\vn$, where~$\vn\sim\mathcal{N}(\vec{0},\id)$.
+Then, we get the equivalent loss function
+\begin{align} \label{eq:loss}
+J(\theta)=\E_{\vx,\vn,t\sim\dist{X,N,T}}\tfrac{1}{2}\left[\norm{\sqrt{t}\nabla_\vy R_L(\vy,t,\theta) -\vn}_2^2 + m_t\left(\left(\tfrac{\partial}{\partial t}R_L(\vy,t,\theta)\right)^2 -2\tfrac{\partial^2}{\partial t^2}R_L(\vy,t,\theta)\right)\right].
+\end{align}
+In contrast to pure denoising score matching-based loss functions~\citep{SoEr19,HoJa20}, the loss~\eqref{eq:loss} introduces a regularization along the smoothing direction~$t$.
+In particular, the loss favors models with an energy~$F$ that slowly changes in this direction and is preferably convex.
+Note that these properties are desirable for any gradient-based optimization scheme operating on the joint energy~$F$.
+
+\subsubsection{Logarithmic Reparametrization}
+The score-matching-based training ensures that the non-linear functions better approximate the score of the true data of the features as~$t\to\tmin$.
+Thus, it is reasonable to distribute the learnable weights of~$\phi_i$ toward this regime to account for the increasing complexity.
+Therefore, we facilitate the logarithmic reparametrization~$\widehat{t}=\log(t)$, $\tminh=\log(\tmin)$, and $\tmaxh=\log(\tmax)$.
+Then, the domain~$\widehat{\T}$ is on the negative halfspace and the loss~\eqref{eq:loss} changes to
+\begin{align} \label{eq:losslog}
+\widehat{J}(\theta)=\E_{\vx,\vn,\widehat{t}\sim\dist{X,N,T}}\tfrac12\Bigg[&\norm{e^{\widehat{t}/2}\nabla_\vy F(\vy,\widehat{t},\theta) -\vn}_2^2 + \left(\left(\tfrac{\partial}{\partial\widehat{t}}F(\vy,\widehat{t},\theta)\right)^2 -2\tfrac{\partial^2}{\partial \widehat{t}^2}F(\vy,\widehat{t},\theta)\right)\Bigg].
+\end{align}
+We highlight that the gradient and the Hessian are measured on the logarithmic domain to avoid intensive regularization toward~$\tmin$.
+
+\subsubsection{Implementation Details}
+\todo{maybemove to appendix}
+To extract and combine features, we use the following convolution operators.
+The first convolution operator~$K_1$ facilitates~$N_1=48$ kernels of size~$7\times 7$, which are initialized by the 2D discrete cosine transform basis filers as in~\citet{ChPo16,KoKl17}.
+All subsequent operators~$K_i$, $i=2,\ldots,L$ implement 2-dimensional convolutions using~$N_i=48$ kernels of size~$3\times 3$.
+Those filters are initialized using ``Kaiming''-normal initialization.
+Neither of the convolution operators facilitates bias terms since each subsequent non-linear parametric function may adapt to its input features.
+
+Throughout the prior models, every non-linear function is implemented using weighted spline basis functions.
+In addition, each non-linearity is a function in two variables -- an input feature~$x\in\R$ and the (logarithmic) smoothing parameter~$\widehat{t}\in[\tminh,\tmaxh]$.
+For the $i^\text{th}$ layer and the $j^\text{th}$ feature channel, the output of the corresponding activation function~$\phi_{ij}$ is computed as
+\[
+\phi_{ij}(x,\widehat{t}) = \sum_{l=1}^{N_x}\sum_{o=1}^{N_t} w_{ij}^{lo} \varphi\left(\frac{x-\mu_x^l}{\gamma_x}\right) \varphi\left(\frac{\widehat{t}-\mu_x^o}{\gamma_t}\right),
+\]
+where $N_x,N_t\in\N$ define the number of basis functions and the weights~$w_{ij}^{lo}\in\R$ are learned during optimization.
+For all functions, we place the means~$\mu_x^l$ on an equidistant grid on~$[-3.5,3.5]$ and set~$\gamma_x=\frac{7}{N_x-1}$.
+Likewise, the means~$\mu_t^o$ are equally distributed on the interval~$[\tminh,\tmaxh]$ and $\gamma_t=\frac{\tmaxh-\tminh}{N_t-1}$.
+The kernel~$\varphi\colon\R\to\R$ is given by the quartic spline, i.e.,
+\[
+\varphi(x)=\tfrac{1}{24}
+\begin{cases}
+11 + 12(\vert x\vert+\frac12) - 6(\vert x\vert+\frac12)^2 - 12(\vert x\vert+\frac12)^3 + 6(\vert x\vert+\frac12)^4 &\text{if } 0\leq\vert x\vert< \frac12\\
+1 + 4(\frac32-\vert x\vert) + 6(\frac32-\vert x\vert)^2 + 4(\frac32-\vert x\vert)^3 - 4(\frac32-\vert x\vert)^4 &\text{if } \frac12\leq \vert x\vert< \frac32\\
+(\frac52-\vert x\vert)^4 &\text{if } \frac32\leq \vert x\vert<\frac52\\
+0 &\text{else}
+\end{cases}.
+\]
+Clearly, these activation functions are computationally much more expensive than simple ReLU-activations.
+However, the spline-based activation functions are much more expressive and several implementation tricks can be used to compute these activation functions efficiently.
+
+
+
+As a source of natural image patches, we consider the BSDS500 dataset~\cite{MaFo01} and randomly extract~$96\times 96$ image patches to define the empirical distribution~$\dist{X}$.
+In the implementation, we sample the smoothing parameter from a uniform distribution, i.e., $\widehat{t}\sim\mathcal{U}(\tminh,\tmaxh)$.
+To minimize the training loss~\eqref{eq:losslog}, the AdaBelief~\citep{ZhTa20} optimizer is used for $100\ 000$ iterations using a mini-batch size of~$128$ along with an initial learning rate of $10^{-3}$.
+The learning rate is annealed to~$5\cdot 10^{-5}$ using a cosine scheme.
+We utilize the AdaBelief optimizer since it performs preconditioning based on local curvature information.
+Thus, it is well suited to learn parameters that lie in different intervals.
+
+
+\section{Solving Inverse Problems using Priors on the Space of Images}
+In various imaging applications, the task is to determine an underlying image~$\rvx$ given observations~$\rvz$.
+The observations are related to the target through the forward problem
+\[
+\rvz = A \rvx + \rvzeta
+\]
+where the random variable~$\rvzeta$ represents additive noise and the operator~$A$ describes the measurement process.
+The simplest example is image denoising, where the operator~$A=\id$ and the distribution of~$\rvzeta$ describe the noise type.
+In the case of image inpainting, the operator~$A$ applies a binary mask to every image element, which is 1 if the associated pixel is observed and 0 otherwise, and~$\rvzeta\equiv\vec{0}$.
+
+Frequently, the maximum a posteriori estimator is computed to approximate the target, which amounts to
+\[
+\max_{\vx\in\X}\left\{\pdf{\rvx\vert\rvz}(\vx\vert\vz)\propto \pdf{\rvz\vert\rvx}(\vz\vert\vx)\pdf{\rvx}(\vx)\right\}
+\]
+due to Bayes.
+In the negative log domain, we get
+\[
+\min_{\vx\in\X}\left\{ -\log\pdf{\rvx}(\vx) -\log\pdf{\rvz\vert\rvx}(\vz\vert\vx) = R(\vx) + D(\vz,\vx)\right\},
+\]
+which is also known as the variational approach.
+Here, the negative log-prior is equivalent to the regularizer~$R\colon\X\to\R$ and the negative log-likelihood equals the data fidelity term~$D\colon\Z\times\X\to\R$.
+The data fidelity models the forward problem and ensures consistency to the observations, whereas, the regularizer incorporates prior (statistical) knowledge of the solution.
+Throughout this section, we assume that the data fidelity term has a simple proximal mapping, which is the case for many inverse problems in imaging.
+To utilize the statistical knowledge of our learned prior~$R_L$, we next describe suitable ways to handle the additional smoothing parameter~$\widehat{t}$.
+
+\subsection{Joint Optimization}
+As presented in \secref{sec:gnc}, decreasing the smoothing parameter~$\widehat{t}$ results in peakier and more non-convex energies.
+Thus, there are pronounced local minima at~$\tminh$ and $\frac{\partial}{\partial\widetilde{t}}R_L$ is likely to point toward~$\tminh$.
+Consequently, minimizing the joint energy is reasonable.
+Thus, we seek to solve the optimization problem
+\begin{align} \label{eq:jointEnergy}
+\min_{\vx\in\X,\ \widehat{t}\in[\tminh,\tmaxh]} \left\{E(\vx,\widehat{t})\coloneqq R_L(\vx,\widehat{t}) + D(\vz,\vx)\right\}
+\end{align}
+using an alternating proximal gradient scheme~\citep{BoSa14} and Lipschitz backtracking of~\citet{BeTe09}.
+The algorithm is summarized in~\algref{alg:jointMinimization}.
+
+\begin{algorithm}[t]
+\caption{Proximal alternating linearization method using Lipschitz backtracking.}\label{alg:jointMinimization}
+\textbf{Step 0:} Take $L_\vx^0,L_\hatt^0>0$, some~$\gamma_1,\gamma_2\in(0,1)$ and~$\vx^0\in\X$, $\hatt^0\in[\tminh,\tmaxh]$\\
+\textbf{Step i:} $(i\geq 0)$ 
+\begin{enumerate}
+\item
+Determine the smallest integer~$k_i$ such that 
+\[
+R_L(\vx,\hatt_i) \leq R_L(\vx_i,\hatt_i) + \scal{\nabla_\vx R_L(\vx_i,\hatt_i))}{\vx-\vx_i} + \tfrac{1}{2\eta}\norm{\vx-\vx_i}_2^2
+\]
+with $\vx = \prox_{\eta D(\vz,\cdot)}(\vx_i-\eta\nabla_\vx R_L(\vx_i,\hatt_i))$ using $\eta=\tfrac{\gamma^{k_i}}{L_\vx^i}$.
+\item
+Set $\vx_{i+1}=\vx$ and $L_\vx^{i+1}=\max\left(\tfrac{\gamma_2}{\eta},1\right)$
+\item
+Determine the smallest integer~$l_i$ such that 
+\[
+R_L(\vx_{i+1},\hatt) \leq R_L(\vx_{i+1},\hatt_i) + \tfrac{\partial}{\partial\hatt} R_L(\vx_{i+1},\hatt_i)(\hatt-\hatt_i) + \tfrac{1}{2\eta}(\hatt-\hatt_i)^2
+\]
+with $\hatt = \proj_{[\tminh,\tmaxh]}(\hatt_i-\eta\tfrac{\partial}{\partial\hatt}R_L(\vx_{i+1},\hatt_i))$ using $\eta=\tfrac{\gamma^{l_i}}{L_\hatt^i}$.
+\item
+Set $\hatt_{i+1}=\hatt$ and $L_\hatt^{i+1}=\max\left(\tfrac{\gamma_2}{\eta},1\right)$
+\end{enumerate}
+\end{algorithm}
+
+\todo{include and describe numerical results}
+
+\subsection{Predefined Smoothing Schedule}
+The second approach is motivated by recent DDPM models~\citep{SoEr19,HoJa20}.
+The idea is to first define a decreasing schedule for the smoothing parameter~$\{\widehat{t}_i\}_{i=1}^n$ such that~$\tmaxh>\widehat{t}_1$, $\widehat{t}_i>\widehat{t}_{i+1}$ for~$i=1,\ldots,n-1$ and $\widehat{t}_n=\tminh$.
+Then, this sequence defines a family of optimization problems
+\[
+\vx_i =\argmin_{\vx\in\X} \left\{E(\widehat{t}_i)\coloneqq R_L(\vx,\widehat{t}_i)+D(\vz,\vx)\right\}
+\]
+that are sequentially minimized using the proximal gradient scheme~\citep{Be17}
+\[
+\vx_{i+1} = \prox_{\eta_iD(\vz,\cdot)}(\vx_i-\eta_i\nabla_\vx R_L(\vx_i,\widehat{t}_i)),
+\]
+where~$\eta_i$ is the step size at the~$i^\text{th}$ iteration.
+Note that we perform only a single proximal-gradient step on every energy~$E(\widehat{t}_i)$ since the energies smoothly change along~$\widehat{t}$ for large enough~$n$.
+For selecting the step sizes, we consider Tweedie's identity as in \secref{sec:gnc}.
+In particular, Tweedie's formula states that a gradient step on the log-density of noisy images (degraded by additive Gaussian noise) scaled by the variance results in the conditional mean squared estimator.
+Using the training objective~\eqref{eq:losslog}, our priors learned to approximate the negative log-density of noisy image patches for any smoothing parameter~$\widetilde{t}$.
+Thus, we obtain an approximation of the conditional mean estimator by setting the step size to an estimate of the variance~$\eta_i=\exp(\widehat{t}_i)$.
+
+\todo{include and describe numerical results}
+
+
+
+\subsection{Task-specifig Learning of Smoothing Schedule}
+The results of the previous sections suggest that the performance can be increased by adapting the smoothing schedule.
+Therefore, we propose to ``unroll'' the optimization of the family of smoothed energies~$E(\hatt)$ for $n\in\N$ steps and learn the smoothing schedule~$\{\hatt_i\}_{i=1}^n$ as well as the step sizes~$\{\eta_i\}_{i=1}^n$ from data.
+Since the gradient w.r.t.~$\hatt$ of each prior~$R_L$ is smooth due to the quartic spline interpolation, any non-convex gradient-based optimization algorithm can be used.
+
+Interestingly, this observation relates the successful trainable non-linear reaction-diffusion (TNRD) models of~\citet{ChPo16} and variational networks (VNs)~\citep{KoKl17,HaKl18,EfKo20} to diffusion-based models by means of joint priors on the space of image patches.
+Thus, variational networks -- with temporally changing parameters across the steps -- can be interpreted as a learned proximal-gradient scheme on a gradually more non-convex energy.
+This relation enables an unsupervised pretraining of the prior advocated in TNRDs or VNs, followed by a task-specific fine-tuning of either just the smoothing schedule or the entire model.
+
+In contrast to the two previous approaches, we only need to define the number of steps~$n$ as a hyperparameter, which is typically constrained by the time budget in applications.
+
+\todo{include and describe numerical results}
+
+
+
+
+% \subsection{Convergence of Sequence induced by Proximal--Gradient scheme}
+% Next, we apply the learned noise-conditional energy~$R(\vx,t)$ to solve inverse problems.
+% In details, we utilize the learned regularization functions in a variational problem of the form
+% \[
+% \min_{\vx} \left\{E(\vx, t) \coloneqq R(\vx,t) + \lambda D(\vx, \vz) \right\}.
+% \]
+% Here $\lambda$ is a parameter that balances regularization and data fidelity and typically accounts for the noise-level in the measurements~$\vz$.
+% Let us assume that the proximal map on the data fidelity term~$D$ is simple to compute (e.g., denoising, inpainting, deblurring, super-resolution, magnetic resonance reconstruction).
+% Then one could use the proximal gradient method~\citep{Be17} defined as follows
+% \begin{align}\label{eq:proxGrad}
+% \vx_{k+1} = \prox_{\tau_k\lambda D}\left(\vx_k - \tau_k\nabla_{\vx}R(\vx_k,t_k)\right),
+% \end{align}
+% where~$\tau_k>0$ is the step size of the $k^\mathrm{th}$ step.
+% Tweedie's formula~\citep{Ro56,RaSi11} suggests that the conditional mean given a noisy sample can be computed by performing a gradient step on the log noisy distribution and the step size is given by the variance, i.e.
+% \[
+% \E_{\vx\sim p_{X\vert Z}(\vx\vert Z=\vz)}\{x\}=\vz+ t \nabla_\vz\log p_Z(\vz).
+% \]
+% For now assume that the learned regularizer perfectly matches the distribution of noisy images.
+% Then, we observe that the gradient step in~\eqref{eq:proxGrad} implements Tweedie's formula if $\tau_k$ reflects the variance of~$\vx_k$, which is estimated by~$t_k$.
+% This results in the following algorithm
+% \[
+% \vx_{k+1} = \prox_{t_k\lambda D}\left(\vx_k - t_k\nabla_{\vx}R(\vx_k,t_k)\right).
+% \]
+% \citep{Be15} for Banach fixed point theorem and Krasnosel'skii--Mann theorem.
+
+% \subsection{Probabilistic Scale Space}
+
+% The underlying idea of score matching~\cite{Hy05} is to fit a parametric model to a data distribution~$p_X$.
+% However, an essential requirement of explicit score matching is that the data distribution is differentiable, which is not the case in many setting~\todo{provide some examples}.
+% To circumvent this drawback, Vincent~\cite{Vi11} introduced denoising score matching, i.e., explicit score matching on a smoothed data distribution.
+% Here, the smoothing is typically performed by means of additive Gaussian noise with a small variance.
+% Due to the full support of the Gaussian probability density, the explicit score matching problem becomes well-defined.
+% Recently, \cite{SoEr19} introduced noise conditional score matching.
+
+
+
+
+% -----------------------------------------------------------------------------------------------------
+\section{Experimental Results}
+
+TODO:
+\begin{itemize}
+    \item Training on image patches
+    \item 
+\end{itemize}
+
+% -----------------------------------------------------------------------------------------------------
+\section{Conclusion}
+
+\subsubsection*{Acknowledgments}
+Use unnumbered third level headings for the acknowledgments. All
+acknowledgments, including those to funding agencies, go at the end of the paper.
+
+
+\bibliography{references}
+\bibliographystyle{iclr2023_conference}
+
+\appendix
+\section{Appendix}
+
+\section{Proofs}
+
+\begin{theorem}
+Let~$\X\subset\R^d$ be a bounded set such that diameter~$\diameter(\X)<\infty$ and consider a GMM of the form
+\[
+p(\vx) = \sum_{i=1}^n w_i G(\vx_i,\Sigma_i)(\vx),
+\]
+where $(w_1\ \cdots \ w_n)^\top\in\Delta^n$. Assume~$\{\vx_i\}_{i=1}^n\subset\X$.
+Then there exists a smoothing parameter~$\widetilde{t}\in(0,\infty)$ such that the smoothed energy
+\[
+F(\vx,t)\coloneqq -\log \big( (p \ast G(\vec{0}, t\id))(\vx)\big)
+\]
+is \emph{convex} w.r.t.~$\vx$ for all~$t\geq\widetilde{t}$.
+\end{theorem}
+\begin{proof}
+The smoothed energy is defined as a convolution of Gaussians~\citep{Du19}, hence its explicit form reads as
+\begin{align} \label{eq:fgmm}
+F(\vx,t) = -\log \underbrace{\sum_{i=1}^n w_i G(\vx_i,\Sigma_i+t\id)(\vx)}_{\eqqcolon f(\vx,t)} = -\log f(\vx,t).
+\end{align}
+Since $F\in\C^{\infty}(\X\times \R_{++}, \R)$, the proof relies on showing positive definiteness of the Hessian~$\nabla_\vx^2 F(\vx,t)$ for any~$\vx\in\X$.
+Let us first compute the gradient~$f$
+\begin{align*}
+\nabla_\vx f(\vx,t) &= 
+-\sum_{i=1}^n \frac{w_i}{\vert 2\pi\widetilde{\Sigma}_i\vert^{\frac{1}{2}}} \exp\left(-\norm{\vx-\bm{\mu}}_{\widetilde{\Sigma}_i^{-1}}^2\right) \widetilde{\Sigma}_i^{-1} (\vx-\vx_i)\\
+&= -\sum_{i=1}^n w_i G(\vx_i,\widetilde{\Sigma}_i) \underbrace{\widetilde{\Sigma}_i^{-1} (\vx-\vx_i)}_{\vr_i}
+\end{align*}
+using $\widetilde{\Sigma}_i = \Sigma_i+t\id$.
+Similarly, the Hessian of $f$ is given by
+\[
+\nabla_\vx^2 f(\vx,t) = -\sum_{i=1}^n w_i G(\vx_i,\widetilde{\Sigma}_i)\left(\widetilde{\Sigma}_i^{-1} -  \vr_i\vr_i^\top\right).
+\]
+Then the gradient of the energy reads as
+\[
+\nabla_\vx F(\vx, t) = -\frac{1}{f(\vx,t)} \nabla_\vx f(\vx,t)
+\]
+and its Hessian is defined as
+\[
+\nabla_\vx^2 F(\vx, t) =
+-\frac{1}{f(\vx,t)} \nabla_\vx^2 f(\vx, t) + \frac{1}{f(\vx,t)^2} \nabla_\vx f(\vx,t) \left(\nabla_\vx f(\vx,t)\right)^\top.
+\]
+By plugging in the Hessian of $f$, we get
+\[
+\nabla_\vx^2 F(\vx, t) = \underbrace{\frac{1}{f(\vx,t)}}_{\geq0}\Bigg\{\sum_{i=1}^n \underbrace{w_i G(\vx_i,\widetilde{\Sigma}_i)(\vx)}_{\geq0} \left( \widetilde{\Sigma}_i^{-1} - \vr_i\vr_i^\top  \right) + \underbrace{\frac{1}{f(\vx,t)} \nabla_\vx f(\vx,t) \left(\nabla_\vx f(\vx,t)\right)^\top}_{\succeq 0} \Bigg\}.
+\]
+For any~$t\in(0,\infty)$, the energy~$F$ is convex if $\nabla_\vx^2 F(\vx, t)\succeq0$ for all~$\vx\in\X$.
+Since almost all parts of~$\nabla_\vx^2 F(\vx, t)$ are positive, we only need to ensure that
+\[
+\widetilde{\Sigma}_i^{-1} - \vr_i\vr_i^\top = \widetilde{\Sigma}_i^{-1} - \widetilde{\Sigma}_i^{-1} (\vx-\vx_i)(\vx-\vx_i)^\top \widetilde{\Sigma}_i^{-1} \succeq 0
+\]
+for all~$i=1,\ldots,n$.
+By multiplying $\widetilde{\Sigma}_i$ from both sides, we get
+\[
+\widetilde{\Sigma}_i - (\vx-\vx_i)(\vx-\vx_i)^\top \succeq 0 \iff \Sigma_i + t\id \succeq (\vx-\vx_i)(\vx-\vx_i)^\top.
+\]
+Computing the minimal Eigenvalue on the left-hand-side and the maximal Eigenvalue on the right-hand-side, we obtain
+\[
+\lambda_\mathrm{min}(\Sigma_i) + t \geq \lambda_\mathrm{max}\left(\norm{\vx-\vx_i}^2 \frac{\vx-\vx_i}{\norm{\vx-\vx_i}}\frac{(\vx-\vx_i)^\top}{\norm{\vx-\vx_i}}\right) = \norm{\vx-\vx_i}^2.
+\]
+Since $\lambda_\mathrm{min}(\Sigma_i)\geq0$ for any $i=1,\ldots,n$, it is sufficient to show that
+\[
+t\geq \norm{\vx-\vx_i}^2,
+\]
+which is the case if 
+\[
+t\geq \max_{x\in\X}\max_{i=1,\ldots,n} \norm{\vx-\vx_i}^2
+\]
+holds true.
+Note that we can estimate the right-hand-side from above by the domain's diameter~$\diameter(\X)=\sup_{x,y\in\X}\norm{x-y}$.
+As a result, we conclude the proof by
+\[
+t\geq \diameter(\X)^2.
+\]
+\end{proof}
+
+\begin{corollary}
+Theorem~\ref{thm:Fconvex} also holds if an empirical discrete probability measure of a dataset~$\{\vx_i\}_{i=1}^n\subset\X$, i.e.
+\[
+p = \frac{1}{n}\sum_{i=1}^n\delta_{\vx_i},
+\]
+is considered.
+Here, $\delta_{\vx}$ denotes the Dirac delta measure located at~$\vx$.
+\end{corollary}
+
+\begin{proof}
+Since the convolution of the empirical probability measure~$p$ with a zero-mean Gaussian results in a GMM due to the translation property of the Dirac delta function, we get $F(\vx,t) = -\log f(\vx,t)$ for
+\[
+f(\vx,t)=\frac{1}{n}\sum_{i=1}^n G(\vx_i, t\id).
+\]
+Note that this results is identical to the definition of~$f$ in \eqref{eq:fgmm} if $\Sigma_i=\bm{0}$ for $i=1,\ldots,n$.
+Consequently, the proof of this corollary follows the same line of arguments as in Theorem~\ref{thm:Fconvex}.
+\end{proof}
+
+\end{document}
