@@ -1,14 +1,28 @@
-\documentclass{article} % For LaTeX2e
-\usepackage{iclr2023_conference,times}
+%%%%%%%% ICML 2022 EXAMPLE LATEX SUBMISSION FILE %%%%%%%%%%%%%%%%%
 
-% Optional math commands from https://github.com/goodfeli/dlbook_notation.
-\input{math_commands.tex}
+\documentclass[nohyperref]{article}
 
+% Recommended, but optional, packages for figures and better typesetting:
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{booktabs} % for professional tables
+
+% hyperref makes hyperlinks in the resulting PDF.
+% If your build breaks (sometimes temporarily if a hyperlink spans a page)
+% please comment out the following usepackage line and replace
+% \usepackage{icml2022} with \usepackage[nohyperref]{icml2022} above.
 \usepackage{hyperref}
-\usepackage{url}
 
-\usepackage{algorithm}
-% \usepackage[noend]{algpseudocode} 
+
+% Attempt to make hyperref and algorithmic work together better:
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+% Use the following line for the initial blind version submitted for review:
+\usepackage{icml2022}
+
+% If accepted, instead use the following line for the camera-ready submission:
+% \usepackage[accepted]{icml2022}
 
 % For theorems and such
 \usepackage{amsmath}
@@ -16,17 +30,10 @@
 \usepackage{mathtools}
 \usepackage{amsthm}
 
-\theoremstyle{plain}
-\newtheorem{theorem}{Theorem}[section]
-\newtheorem{proposition}[theorem]{Proposition}
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{corollary}[theorem]{Corollary}
-\theoremstyle{definition}
-\newtheorem{definition}[theorem]{Definition}
-\newtheorem{assumption}[theorem]{Assumption}
-\theoremstyle{remark}
-\newtheorem{remark}[theorem]{Remark}
+% if you use cleveref..
+\usepackage[capitalize,noabbrev]{cleveref}
 
+\input{math_commands.tex}
 % custom commands
 \newcommand{\todo}[1]{{\color{red}\textbf{TODO:}``#1''}}
 % \newcommand{\R}{\mathbb{R}}
@@ -61,65 +68,99 @@
 \newcommand{\VP}{\mathrm{VP}}
 \newcommand{\VE}{\mathrm{VE}}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THEOREMS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
 
-\title{On Links between Diffusion Models, Graduated non-convexity, and Variational Networks}
+% Todonotes is useful during development; simply uncomment the next line
+%    and comment out the line below the next line to turn off comments
+%\usepackage[disable,textsize=tiny]{todonotes}
+% \usepackage[textsize=tiny]{todonotes}
 
-% Authors must not appear in the submitted version. They should be hidden
-% as long as the \iclrfinalcopy macro remains commented out below.
-% Non-anonymous submissions will be rejected without review.
 
-\author{Antiquus S.~Hippocampus, Natalia Cerebro \& Amelie P. Amygdale \thanks{ Use footnote for providing further information
-about author (webpage, alternative address)---\emph{not} for acknowledging
-funding agencies.  Funding acknowledgements go at the end of the paper.} \\
-Department of Computer Science\\
-Cranberry-Lemon University\\
-Pittsburgh, PA 15213, USA \\
-\texttt{\{hippo,brain,jen\}@cs.cranberry-lemon.edu} \\
-\And
-Ji Q. Ren \& Yevgeny LeNet \\
-Department of Computational Neuroscience \\
-University of the Witwatersrand \\
-Joburg, South Africa \\
-\texttt{\{robot,net\}@wits.ac.za} \\
-\AND
-Coauthor \\
-Affiliation \\
-Address \\
-\texttt{email}
-}
+% The \icmltitle you define below is probably too long as a header.
+% Therefore, a short form for the running title is supplied here:
+\icmltitlerunning{TODO change template to 2023}
 
-% The \author macro works with any number of authors. There are two commands
-% used to separate the names and addresses of multiple authors: \And and \AND.
-%
-% Using \And between authors leaves it to \LaTeX{} to determine where to break
-% the lines. Using \AND forces a linebreak at that point. So, if \LaTeX{}
-% puts 3 of 4 authors names on the first line, and the last on the second
-% line, try using \AND instead of \And before the third author name.
-
-\newcommand{\fix}{\marginpar{FIX}}
-\newcommand{\new}{\marginpar{NEW}}
-
-%\iclrfinalcopy % Uncomment for camera-ready version, but NOT for submission.
 \begin{document}
 
+\twocolumn[
+\icmltitle{On Links between Diffusion Models, Graduated non-convexity, and\\ Variational Networks}
 
-\maketitle
+% It is OKAY to include author information, even for blind
+% submissions: the style file will automatically remove it for you
+% unless you've provided the [accepted] option to the icml2022
+% package.
+
+% List of affiliations: The first argument should be a (short)
+% identifier you will use later to specify author affiliations
+% Academic affiliations should list Department, University, City, Region, Country
+% Industry affiliations should list Company, City, Region, Country
+
+% You can specify symbols, otherwise they are numbered in order.
+% Ideally, you should not use this facility. Affiliations will be numbered
+% in order of appearance and this is the preferred way.
+\icmlsetsymbol{equal}{*}
+
+\begin{icmlauthorlist}
+\icmlauthor{Firstname1 Lastname1}{equal,yyy}
+\icmlauthor{Firstname2 Lastname2}{equal,yyy,comp}
+\icmlauthor{Firstname3 Lastname3}{comp}
+\icmlauthor{Firstname4 Lastname4}{sch}
+\icmlauthor{Firstname5 Lastname5}{yyy}
+\icmlauthor{Firstname6 Lastname6}{sch,yyy,comp}
+\icmlauthor{Firstname7 Lastname7}{comp}
+%\icmlauthor{}{sch}
+\icmlauthor{Firstname8 Lastname8}{sch}
+\icmlauthor{Firstname8 Lastname8}{yyy,comp}
+%\icmlauthor{}{sch}
+%\icmlauthor{}{sch}
+\end{icmlauthorlist}
+
+\icmlaffiliation{yyy}{Department of XXX, University of YYY, Location, Country}
+\icmlaffiliation{comp}{Company Name, Location, Country}
+\icmlaffiliation{sch}{School of ZZZ, Institute of WWW, Location, Country}
+
+\icmlcorrespondingauthor{Firstname1 Lastname1}{first1.last1@xxx.edu}
+\icmlcorrespondingauthor{Firstname2 Lastname2}{first2.last2@www.uk}
+
+% You may provide any keywords that you
+% find helpful for describing your paper; these are used to populate
+% the "keywords" metadata in the PDF but will not be shown in the document
+\icmlkeywords{Machine Learning, ICML}
+
+\vskip 0.3in
+]
+
+% this must go after the closing bracket ] following \twocolumn[ ...
+
+% This command actually creates the footnote in the first column
+% listing the affiliations and the copyright notice.
+% The command takes one argument, which is text to display at the start of the footnote.
+% The \icmlEqualContribution command is standard text for equal contribution.
+% Remove it (just {}) if you do not need this facility.
+
+%\printAffiliationsAndNotice{}  % leave blank if no need to mention equal contribution
+\printAffiliationsAndNotice{\icmlEqualContribution} % otherwise use the standard text.
 
 \begin{abstract}
-This paper proposes a novel prior for modeling the statistics of natural images, which is an important pillar for Bayesian modeling and inference for image reconstruction. 
-Our main contribution is the introduction of a scale space of image densities which is obtained by performing a linear diffusion in the space of images~\footnote{Note that with the space of images we mean the high-dimensional space with a dimension equal to the number of images pixels.}, with scale space parameter~$t$. On this scale space, we use the score matching technique to learn a family of parametric prior models indexed by continuous scale-space parameter $t$. In the negative log domain, the family of learned priors are represented by gradually more convex energies which is advantageous for efficient inference or sampling. It turns out that our formulation generalizes several recently proposed approaches including the trained nonlinear reaction diffusion and score-based generative models within a unified formulation.
+This document provides a basic paper template and submission guidelines.
+Abstracts must be a single paragraph, ideally between 4--6 sentences long.
+Gross violations will trigger corrections at the camera-ready phase.
 \end{abstract}
 
+% -----------------------------------------------------------------------------------------------------
 \section{Introduction}
-
-Targets:
-\begin{itemize}
-    \item graduated non-convexity view of denoising SM and diffusion models
-    \item alternating minimization of $x$ and $\alpha$ equivalent to fixed scheme
-    \item learning the interpolation points is equivalent to TNRDs and VNs
-    \item enables an unsupervised pre-training
-    \item just a few steps are required at inferance
-\end{itemize}
 
 % -----------------------------------------------------------------------------------------------------
 \section{Background}
@@ -132,8 +173,6 @@ Targets:
 
 \subsection{Variational Networks}
 Introduction and definition of unrolling approach in particular for variational networks.
-
-\subsection{Scale Spaces}
 
 \subsection{Score Matching}
 
@@ -185,7 +224,7 @@ F(\vx,t)\coloneqq -\log \big( (p \ast G(\vec{0}, t\id))(\vx)\big)
 \]
 is \emph{convex} w.r.t.~$\vx$ for all~$t\geq\widetilde{t}$.
 \end{theorem}
-\begin{corollary}
+\begin{corollary}\label{cor:empirical}
 Theorem~\ref{thm:Fconvex} also holds if an empirical discrete probability measure of a dataset~$\{\vx_i\}_{i=1}^n\subset\X$, i.e.
 \[
 p = \frac{1}{n}\sum_{i=1}^n\delta_{\vx_i},
@@ -193,7 +232,7 @@ p = \frac{1}{n}\sum_{i=1}^n\delta_{\vx_i},
 is considered.
 Here, $\delta_{\vx}$ denotes the Dirac delta measure located at~$\vx$.
 \end{corollary}
-The proofs of the theorem and corollary can be found in the appendix.
+The proofs of the theorem and corollary can be found in~\cref{apdx:proofs}.
 Note that in this paper we only consider the variance exploding setting, however, similar results can be obtained for variance preserving schemes~\citep{SoSo20}. 
 
 The underlying idea of the graduated non-convexity algorithm is to speed up the estimation of the global minimum of a non-convex energy.
@@ -226,7 +265,8 @@ Approximately minimize current energy~$F(\cdot,t_i)$ using single step
 To illustrate the effectiveness of the annealed graduated non-convexity approach, we consider a simple 1D example.
 In particular, we use the smoothed GMM corresponding to the energy
 \begin{align} \label{eq:gmmEx}
-F(x,t)=-\log\left(\tfrac{7}{10}G\left(-\tfrac12,\tfrac{1}{1000}+t\right)(x)+\tfrac{3}{10}G\left(\tfrac12,\tfrac14+t\right)(x)\right)
+F(x,t)=-\log\big(\tfrac{7}{10}&G\left(-\tfrac12,\tfrac{1}{1000}+t\right)(x)\\
++\tfrac{3}{10}&G\left(\tfrac12,\tfrac14+t\right)(x)\big) \notag
 \end{align}
 consisting of two components over the domain $x\in[-3,3]$ and $t\in[10^{-4},1]$.
 Note that the addition of $t$ at the variances originates from the convolution of the data density with a Gaussian as considered in Theorem~\ref{thm:Fconvex}.
@@ -239,17 +279,15 @@ The plot on the right in \figref{fig:gmmOptimization} visualizes the rate of tra
 The trajectories start from~$N=1\ 000$ equally spaced initial positions~$x^0$ on $[-3,3]$.
 The different lines encode how many annealed graduated non-convexity steps~$I$ were performed.
 The lines show that for increasing initial smoothing fewer steps are required such that all trajectories converge to the global minimum.
-
-
-\begin{figure}[t]
-\includegraphics[width=.45\linewidth]{figures/ex_gmm/ex_gmm_opt}\hfill
-\includegraphics[width=.54\linewidth]{figures/ex_gmm/ex_gmm_acc}
+\begin{figure*}[t]
+\hfill\includegraphics[width=.4\linewidth]{./figures/ex_gmm/ex_gmm_opt}\hfill
+\includegraphics[width=.5\linewidth]{./figures/ex_gmm/ex_gmm_acc}\hfill
 \label{fig:gmmOptimization}
 \caption{Left: Illustration of the 1D example energy~\eqref{eq:gmmEx} using gray lines. The color lines demonstrate annealed GNC trajectories using $I=12$ steps on a logarithmic scale from~$t_0=1$ to $t^{10}=10^{-4}$; all trajectories end at the global minimum~$x=-\frac12$.
 Right: Visualization of the rate of trajectories attaining the global minimum using~$N=1\ 000$ equally spaced initial points as a function of the initial smoothing time~$t_0$ for a different number of steps~$I\in\{10,100,1\ 000,10\ 000\}$.
 The larger the initial smoothing parameter~$t_0$, the fewer steps are required to obtain the perfect rate.
 }
-\end{figure}
+\end{figure*}
 
 % -----------------------------------------------------------------------------------------------------
 \section{Learning Priors on the Space of Images}
@@ -277,15 +315,15 @@ The underlying idea is that every convolution kernel~$k_i$ specializes on a cert
 The non-linear functions~$\phi_i$ are typically learnable and implemented by simple parametric functions~\citep{RoBl09,ChRa14} or weighted radial basis functions~\citep{ChPo16,KoKl17}.
 Originally, \citet{RoBl09} learned the parameters (convolution kernels, and weights of the potential functions) using contrastive divergence~\citep{Hi02}.
 
-As in the previous section, the distribution of images is gradually smoothed with increasing smoothing parameter~$t$ within the space of images.
-To account for this effect, we propose to extend the FoE model to
+Motivated by the results of the previous section, we next extend the FoE prior to the space of images by introducing the smoothing parameter~$t$.
+In detail, the extended FoE read as
 \begin{align}\label{eq:r1}
 R_1(\vx,t) = \scal{\vec{1}}{\left(\Phi_1(\cdot, t) \circ K_1\right)(\vx)},
 \end{align}
 where the non-linear function depends on~$t$, i.e., $\Phi_1\in\C^3(\R^{d_1}\times\T,\R^{d_1})$.
 Consequently, also the pixel-wise non-linear functions of every feature channel~$\phi_{1j}\in\C^3(\R\times\T,\R)$, $j=1,\ldots,N_1$ depend on~$t$. 
-In detail, all~$\phi_{1j}$ are constructed using weighted 2D quartic spline basis functions, which are equally distributed over the input domain to ensure sufficient smoothness for gradient-based learning.
-We refer to the appendix for implementation details regarding the spline-based non-linear functions.
+Further, all~$\phi_{1j}$ are constructed using weighted 2D quartic spline basis functions, which are equally distributed over the input domain to ensure sufficient smoothness for gradient-based learning.
+We refer to \cref{apdx:implementationDetails} for further details regarding the spline-based non-linear functions.
 
 \subsubsection{Increasing Depth}
 Since the prior~\eqref{eq:r1} essentially consists of a single layer, its expressiveness is limited to simple image features.
@@ -295,9 +333,9 @@ Then, an FoE-type prior facilitating $L$-layers reads as
 R_L(\vx,t) = \scal{\vec{1}}{\left(\Phi_L(\cdot,t)\circ K_L\circ\cdots\circ\Phi_1(\cdot, t) \circ K_1\right)(\vx)}.
 \]
 Each convolution~$K_i\colon\R^{d_{i-1}}\to\R^{d_i}$, $i=1,\ldots,L$ performs a linear combination of all input features, thereby enabling the mixing of features as typically performed in convolutional neural networks (CNNs).
-However, we facilitate parametric activation functions that adapt to the corresponding feature channels.
+In contrast to typical CNNs, we use parametric activation functions that adapt to the corresponding feature channels.
 At every layer~$i\in\{1,\ldots,L\}$ and for any feature channel~$j\in\{1,\ldots,N_i\}$, we employ a 2D parametric point-wise function~$\phi_{ij}\in\C^3(\R\times\T,\R)$ to non-linearly process the features.
-Further details about the parametrization of the activation functions can be found in the appendix.
+Further details about the parametrization of the activation functions can be found in \cref{apdx:implementationDetails}.
 This idea follows recent suggestions to facilitate spline-based parametric activation functions in deep CNNs~\citep{OcMe18,AzGu20}.
 
 
@@ -311,7 +349,8 @@ For our previously defined degradation model, the joint density function reads a
 where $\pdf{\rt}$ is the prior of the smoothing parameter.
 Then, the objective function of (explicit) score matching is given by
 \begin{align} \label{eq:jsm}
-J_\mathrm{SM}(\theta) = \E_{\vy,t\sim\dist{Y,T}}\left[\tfrac12\norm{\nabla R_L(\vy,t,\theta) -\left(- \nabla\log p_{\rvy,T}(\vy,\rt)\right)}_M^2\right],
+&J_\mathrm{SM}(\theta) = \\
+&\hspace{1ex}\E_{\vy,t\sim\dist{Y,T}}\left[\tfrac12\norm{\nabla R_L(\vy,t,\theta) -\left(- \nabla\log p_{\rvy,T}(\vy,\rt)\right)}_M^2\right], \notag
 \end{align}
 where $\nabla$ denotes the full gradient of a function and an additional index denotes the gradient w.r.t. only this variable and 
 $M\in\R^{d+1\times d+1}$ is a positive definite block-diagonal matrix, i.e.,
@@ -322,9 +361,10 @@ t\id & \vec{0} \\
 \end{pmatrix}.
 \]
 By applying the metric, we obtain
-\begin{align}
-J_\mathrm{SM}(\theta) &=\E_{\vy,t\sim\dist{Y,T}}\left[\tfrac{t}{2}\norm{\nabla_\vy R_L(\vy,t,\theta) -\left(- \nabla_\vy\log p_{Y,T}(\vy,t)\right)}_2^2 \right.\label{eq:jsmParts}\\
-&\hspace{5em}+ \left.\tfrac12\left(\tfrac{\partial}{\partial t}R_L(\vy,t,\theta) -\left(-\tfrac{\partial}{\partial t}\log p_{Y,T}(\vy,t)\right)\right)^2m_t\right].\notag
+\begin{align}\label{eq:jsmParts}
+&J_\mathrm{SM}(\theta)=\\
+&\hspace{1ex}\E_{\vy,t\sim\dist{Y,T}}\Big[\tfrac{t}{2}\norm{\nabla_\vy R_L(\vy,t,\theta) -\left(- \nabla_\vy\log p_{Y,T}(\vy,t)\right)}_2^2 \notag\\
+&\hspace{6ex}+\tfrac12\left(\tfrac{\partial}{\partial t}R_L(\vy,t,\theta) -\left(-\tfrac{\partial}{\partial t}\log p_{Y,T}(\vy,t)\right)\right)^2m_t\Big].\notag
 \end{align}
 Note that~$J_\mathrm{SM}$ decouples into a score matching objective on noisy images~$\vy$ and the smoothing parameter~$t$; the metric (in particular~$m_T>0$) enables balancing of both terms.
 The scaling of the first term by~$t$ is a common variance reduction technique in denoising score matching~\citep{SoEr19,HuLi21}.
@@ -332,16 +372,18 @@ The scaling of the first term by~$t$ is a common variance reduction technique in
 To avoid the computation of the expectation over the true data in the gradient of the joint distribution, we apply denoising score matching to the noisy image term.
 In addition, we replace the score matching objective w.r.t. to~$t$ by its implicit pendant and get
 \begin{align*}
-J_\mathrm{SM}(\theta) &=
-\E_{\vx,\vy,t\sim\dist{X,Y,T}}\left[\tfrac{t}{2}\norm{\nabla_\vy R_L(\vy,t,\theta) -\tfrac{1}{t}(\vy-\vx)}_2^2 + \right.\\
-&\hspace{6em}+ \left. \tfrac{m_t}{2}\left(\left(\tfrac{\partial}{\partial t}R_L(\vy,t,\theta)\right)^2 -2\tfrac{\partial^2}{\partial t^2}R_L(\vy,t,\theta)\right)\right] + C,
+&J_\mathrm{SM}(\theta)=\\
+&\hspace{1ex}\E_{\vx,\vy,t\sim\dist{X,Y,T}}\left[\tfrac{t}{2}\norm{\nabla_\vy R_L(\vy,t,\theta) -\tfrac{1}{t}(\vy-\vx)}_2^2 \right.\\
+&\hspace{5ex}+ \left. \tfrac{m_t}{2}\left(\left(\tfrac{\partial}{\partial t}R_L(\vy,t,\theta)\right)^2 -2\tfrac{\partial^2}{\partial t^2}R_L(\vy,t,\theta)\right)\right] + C,
 \end{align*}
 where $C$ is an additive constant.
 The proof can be obtained by combining the equivalence proofs of~\citet{Hy05} and~\citet{Vi11}.
 To further simply the objective, we perform the change of variables~$\vy=\vx+\sqrt{t}\vn$, where~$\vn\sim\mathcal{N}(\vec{0},\id)$.
 Then, we get the equivalent loss function
 \begin{align} \label{eq:loss}
-J(\theta)=\E_{\vx,\vn,t\sim\dist{X,N,T}}\tfrac{1}{2}\left[\norm{\sqrt{t}\nabla_\vy R_L(\vy,t,\theta) -\vn}_2^2 + m_t\left(\left(\tfrac{\partial}{\partial t}R_L(\vy,t,\theta)\right)^2 -2\tfrac{\partial^2}{\partial t^2}R_L(\vy,t,\theta)\right)\right].
+&J(\theta)=\\
+&\hspace{1ex}\E_{\vx,\vn,t\sim\dist{X,N,T}}\tfrac{1}{2}\left[\norm{\sqrt{t}\nabla_\vy R_L(\vy,t,\theta) -\vn}_2^2\right. \notag\\ 
+&\hspace{9ex}\left.+m_t\left(\left(\tfrac{\partial}{\partial t}R_L(\vy,t,\theta)\right)^2 -2\tfrac{\partial^2}{\partial t^2}R_L(\vy,t,\theta)\right)\right]. \notag
 \end{align}
 In contrast to pure denoising score matching-based loss functions~\citep{SoEr19,HoJa20}, the loss~\eqref{eq:loss} introduces a regularization along the smoothing direction~$t$.
 In particular, the loss favors models with an energy~$F$ that slowly changes in this direction and is preferably convex.
@@ -353,49 +395,11 @@ Thus, it is reasonable to distribute the learnable weights of~$\phi_i$ toward th
 Therefore, we facilitate the logarithmic reparametrization~$\widehat{t}=\log(t)$, $\tminh=\log(\tmin)$, and $\tmaxh=\log(\tmax)$.
 Then, the domain~$\widehat{\T}$ is on the negative halfspace and the loss~\eqref{eq:loss} changes to
 \begin{align} \label{eq:losslog}
-\widehat{J}(\theta)=\E_{\vx,\vn,\widehat{t}\sim\dist{X,N,T}}\tfrac12\Bigg[&\norm{e^{\widehat{t}/2}\nabla_\vy F(\vy,\widehat{t},\theta) -\vn}_2^2 + \left(\left(\tfrac{\partial}{\partial\widehat{t}}F(\vy,\widehat{t},\theta)\right)^2 -2\tfrac{\partial^2}{\partial \widehat{t}^2}F(\vy,\widehat{t},\theta)\right)\Bigg].
+&\widehat{J}(\theta)=\\
+&\hspace{1ex}\E_{\vx,\vn,\widehat{t}\sim\dist{X,N,T}}\tfrac12\Bigg[\norm{e^{\widehat{t}/2}\nabla_\vy F(\vy,\widehat{t},\theta) -\vn}_2^2 \notag\\
+&\hspace{13ex}+ \left(\left(\tfrac{\partial}{\partial\widehat{t}}F(\vy,\widehat{t},\theta)\right)^2 -2\tfrac{\partial^2}{\partial \widehat{t}^2}F(\vy,\widehat{t},\theta)\right)\Bigg]. \notag
 \end{align}
 We highlight that the gradient and the Hessian are measured on the logarithmic domain to avoid intensive regularization toward~$\tmin$.
-
-\subsubsection{Implementation Details}
-\todo{maybemove to appendix}
-To extract and combine features, we use the following convolution operators.
-The first convolution operator~$K_1$ facilitates~$N_1=48$ kernels of size~$7\times 7$, which are initialized by the 2D discrete cosine transform basis filers as in~\citet{ChPo16,KoKl17}.
-All subsequent operators~$K_i$, $i=2,\ldots,L$ implement 2-dimensional convolutions using~$N_i=48$ kernels of size~$3\times 3$.
-Those filters are initialized using ``Kaiming''-normal initialization.
-Neither of the convolution operators facilitates bias terms since each subsequent non-linear parametric function may adapt to its input features.
-
-Throughout the prior models, every non-linear function is implemented using weighted spline basis functions.
-In addition, each non-linearity is a function in two variables -- an input feature~$x\in\R$ and the (logarithmic) smoothing parameter~$\widehat{t}\in[\tminh,\tmaxh]$.
-For the $i^\text{th}$ layer and the $j^\text{th}$ feature channel, the output of the corresponding activation function~$\phi_{ij}$ is computed as
-\[
-\phi_{ij}(x,\widehat{t}) = \sum_{l=1}^{N_x}\sum_{o=1}^{N_t} w_{ij}^{lo} \varphi\left(\frac{x-\mu_x^l}{\gamma_x}\right) \varphi\left(\frac{\widehat{t}-\mu_x^o}{\gamma_t}\right),
-\]
-where $N_x,N_t\in\N$ define the number of basis functions and the weights~$w_{ij}^{lo}\in\R$ are learned during optimization.
-For all functions, we place the means~$\mu_x^l$ on an equidistant grid on~$[-3.5,3.5]$ and set~$\gamma_x=\frac{7}{N_x-1}$.
-Likewise, the means~$\mu_t^o$ are equally distributed on the interval~$[\tminh,\tmaxh]$ and $\gamma_t=\frac{\tmaxh-\tminh}{N_t-1}$.
-The kernel~$\varphi\colon\R\to\R$ is given by the quartic spline, i.e.,
-\[
-\varphi(x)=\tfrac{1}{24}
-\begin{cases}
-11 + 12(\vert x\vert+\frac12) - 6(\vert x\vert+\frac12)^2 - 12(\vert x\vert+\frac12)^3 + 6(\vert x\vert+\frac12)^4 &\text{if } 0\leq\vert x\vert< \frac12\\
-1 + 4(\frac32-\vert x\vert) + 6(\frac32-\vert x\vert)^2 + 4(\frac32-\vert x\vert)^3 - 4(\frac32-\vert x\vert)^4 &\text{if } \frac12\leq \vert x\vert< \frac32\\
-(\frac52-\vert x\vert)^4 &\text{if } \frac32\leq \vert x\vert<\frac52\\
-0 &\text{else}
-\end{cases}.
-\]
-These activation functions are computationally much more expensive than simple ReLU-activations.
-However, the spline-based activation functions are much more expressive and several implementation tricks can be used to compute these activation functions efficiently.
-The non-linear functions of the intermediate layers~$\phi_i,\ i=1,\ldots,L-1$ are initialized to the identity function, while the last non-linear function~$\phi_L$ is initialized to the quadratic function.
-
-
-
-As a source of natural image patches, we consider the BSDS500 dataset~\cite{MaFo01} and randomly extract~$96\times 96$ image patches to define the empirical distribution~$\dist{X}$.
-In the implementation, we sample the smoothing parameter from a uniform distribution, i.e., $\widehat{t}\sim\mathcal{U}(\tminh,\tmaxh)$.
-To minimize the training loss~\eqref{eq:losslog}, the AdaBelief~\citep{ZhTa20} optimizer is used for $100\ 000$ iterations using a mini-batch size of~$128$ along with an initial learning rate of $10^{-3}$.
-The learning rate is annealed to~$5\cdot 10^{-5}$ using a cosine scheme.
-We utilize the AdaBelief optimizer since it performs preconditioning based on local curvature information.
-Thus, it is well suited to learn parameters that lie in different intervals.
 
 
 \section{Solving Inverse Problems using Priors on the Space of Images}
@@ -441,17 +445,19 @@ The algorithm is summarized in~\algref{alg:jointMinimization}.
 \begin{enumerate}
 \item
 Determine the smallest integer~$k_i$ such that 
-\[
-R_L(\vx,\hatt_i) \leq R_L(\vx_i,\hatt_i) + \scal{\nabla_\vx R_L(\vx_i,\hatt_i))}{\vx-\vx_i} + \tfrac{1}{2\eta}\norm{\vx-\vx_i}_2^2
-\]
+\begin{align*}
+R_L(\vx,\hatt_i) \leq &R_L(\vx_i,\hatt_i) + \scal{\nabla_\vx R_L(\vx_i,\hatt_i))}{\vx-\vx_i} \\
+&+ \tfrac{1}{2\eta}\norm{\vx-\vx_i}_2^2
+\end{align*}
 with $\vx = \prox_{\eta D(\vz,\cdot)}(\vx_i-\eta\nabla_\vx R_L(\vx_i,\hatt_i))$ using $\eta=\tfrac{\gamma^{k_i}}{L_\vx^i}$.
 \item
 Set $\vx_{i+1}=\vx$ and $L_\vx^{i+1}=\max\left(\tfrac{\gamma_2}{\eta},1\right)$
 \item
 Determine the smallest integer~$l_i$ such that 
-\[
-R_L(\vx_{i+1},\hatt) \leq R_L(\vx_{i+1},\hatt_i) + \tfrac{\partial}{\partial\hatt} R_L(\vx_{i+1},\hatt_i)(\hatt-\hatt_i) + \tfrac{1}{2\eta}(\hatt-\hatt_i)^2
-\]
+\begin{align*}
+R_L(\vx_{i+1},\hatt) \leq &R_L(\vx_{i+1},\hatt_i) + \tfrac{\partial}{\partial\hatt} R_L(\vx_{i+1},\hatt_i)(\hatt-\hatt_i) \\
+&+ \tfrac{1}{2\eta}(\hatt-\hatt_i)^2
+\end{align*}
 with $\hatt = \proj_{[\tminh,\tmaxh]}(\hatt_i-\eta\tfrac{\partial}{\partial\hatt}R_L(\vx_{i+1},\hatt_i))$ using $\eta=\tfrac{\gamma^{l_i}}{L_\hatt^i}$.
 \item
 Set $\hatt_{i+1}=\hatt$ and $L_\hatt^{i+1}=\max\left(\tfrac{\gamma_2}{\eta},1\right)$
@@ -460,7 +466,7 @@ Set $\hatt_{i+1}=\hatt$ and $L_\hatt^{i+1}=\max\left(\tfrac{\gamma_2}{\eta},1\ri
 
 \subsection{Predefined Smoothing Schedule} \label{sec:predefinedSchedule}
 The second approach is motivated by recent DDPM models~\citep{SoEr19,HoJa20}.
-The idea is to first define a decreasing schedule for the smoothing parameter~$\{\widehat{t}_i\}_{i=1}^n$ such that~$\tmaxh>\widehat{t}_1$, $\widehat{t}_i>\widehat{t}_{i+1}$ for~$i=1,\ldots,n-1$ and $\widehat{t}_n=\tminh$.
+The idea is to first define a decreasing schedule for smoothing parameters~$\{\widehat{t}_i\}_{i=1}^n$ such that~$\tmaxh>\widehat{t}_1$, $\widehat{t}_i>\widehat{t}_{i+1}$ for~$i=1,\ldots,n-1$ and $\widehat{t}_n=\tminh$.
 Then, this sequence defines a family of optimization problems
 \[
 \vx_i =\argmin_{\vx\in\X} \left\{E(\widehat{t}_i)\coloneqq R_L(\vx,\widehat{t}_i)+D(\vz,\vx)\right\}
@@ -496,12 +502,12 @@ In this section, we first analyze the learned regularizers on the space of image
 Then, we compare their performance on two simple imaging tasks -- image denoising and inpainting -- using the three different methods introduced in \secrefs{sec:jointOptimization}{sec:predefinedSchedule}{sec:learnedVN}.
 
 \begin{figure}[t]
-    \includegraphics[width=.9\linewidth]{figures/results/plots_denoise_inpaint}
-    \label{fig:plotsDenoiseInpaint}
-    \caption{Comparison of the different smoothing parameter schedules for image denoising (top row) and image inpainting (bottom row).
-    The columns depict from left to right the energy, PSNR score, and the corresponding smoothing schedule.
-    The different regularizers~$R_L$ are identified by the linestyle, whereas the smoothing parameter schedule is identified by color.
-    }
+\includegraphics[width=\linewidth]{./figures/results/plots_denoise_inpaint}
+\label{fig:plotsDenoiseInpaint}
+\caption{Comparison of the different smoothing parameter schedules for image denoising (left column) and image inpainting (right column).
+The rows depict from top to bottom the energy, PSNR score, and the corresponding smoothing schedule.
+The different regularizers~$R_L$ are identified by the linestyle, whereas the smoothing parameter schedule is identified by color.
+}
 \end{figure}
 
 TODO:
@@ -513,18 +519,21 @@ TODO:
 % -----------------------------------------------------------------------------------------------------
 \section{Conclusion}
 
-\subsubsection*{Acknowledgments}
-Use unnumbered third level headings for the acknowledgments. All
-acknowledgments, including those to funding agencies, go at the end of the paper.
-
 
 \bibliography{references}
-\bibliographystyle{iclr2023_conference}
+\bibliographystyle{icml2022}
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% APPENDIX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
 \appendix
-\section{Appendix}
+\onecolumn
 
-\section{Proofs}
+\section{Proofs of Theorem~\ref{thm:Fconvex} and Corollary~\ref{cor:empirical}} \label{apdx:proofs}
 
 \begin{theorem}
 Let~$\X\subset\R^d$ be a bounded set such that diameter~$\diameter(\X)<\infty$ and consider a GMM of the form
@@ -616,4 +625,62 @@ Note that this results is identical to the definition of~$f$ in \eqref{eq:fgmm} 
 Consequently, the proof of this corollary follows the same line of arguments as in Theorem~\ref{thm:Fconvex}.
 \end{proof}
 
+\section{Implementation Details} \label{apdx:implementationDetails}
+To extract and combine features, we use the following convolution operators.
+The first convolution operator~$K_1$ facilitates~$N_1=48$ kernels of size~$7\times 7$, which are initialized by the 2D discrete cosine transform basis filers as in~\citet{ChPo16,KoKl17}.
+All subsequent operators~$K_i$, $i=2,\ldots,L$ implement 2-dimensional convolutions using~$N_i=48$ kernels of size~$3\times 3$.
+Those filters are initialized using ``Kaiming''-normal initialization.
+Neither of the convolution operators facilitates bias terms since each subsequent non-linear parametric function may adapt to its input features.
+
+Throughout the prior models, every non-linear function is implemented using weighted spline basis functions.
+In addition, each non-linearity is a function in two variables -- an input feature~$x\in\R$ and the (logarithmic) smoothing parameter~$\widehat{t}\in[\tminh,\tmaxh]$.
+For the $i^\text{th}$ layer and the $j^\text{th}$ feature channel, the output of the corresponding activation function~$\phi_{ij}$ is computed as
+\[
+\phi_{ij}(x,\widehat{t}) = \sum_{l=1}^{N_x}\sum_{o=1}^{N_t} w_{ij}^{lo} \varphi\left(\frac{x-\mu_x^l}{\gamma_x}\right) \varphi\left(\frac{\widehat{t}-\mu_x^o}{\gamma_t}\right),
+\]
+where $N_x,N_t\in\N$ define the number of basis functions and the weights~$w_{ij}^{lo}\in\R$ are learned during optimization.
+For all functions, we place the means~$\mu_x^l$ on an equidistant grid on~$[-3.5,3.5]$ and set~$\gamma_x=\frac{7}{N_x-1}$.
+Likewise, the means~$\mu_t^o$ are equally distributed on the interval~$[\tminh,\tmaxh]$ and $\gamma_t=\frac{\tmaxh-\tminh}{N_t-1}$.
+The kernel~$\varphi\colon\R\to\R$ is given by the quartic spline, i.e.,
+\[
+\varphi(x)=\tfrac{1}{24}
+\begin{cases}
+11 + 12(\vert x\vert+\frac12) - 6(\vert x\vert+\frac12)^2 - 12(\vert x\vert+\frac12)^3 + 6(\vert x\vert+\frac12)^4 &\text{if } 0\leq\vert x\vert< \frac12\\
+1 + 4(\frac32-\vert x\vert) + 6(\frac32-\vert x\vert)^2 + 4(\frac32-\vert x\vert)^3 - 4(\frac32-\vert x\vert)^4 &\text{if } \frac12\leq \vert x\vert< \frac32\\
+(\frac52-\vert x\vert)^4 &\text{if } \frac32\leq \vert x\vert<\frac52\\
+0 &\text{else}
+\end{cases}.
+\]
+These activation functions are computationally much more expensive than simple ReLU-activations.
+However, the spline-based activation functions are much more expressive and several implementation tricks can be used to compute these activation functions efficiently.
+The non-linear functions of the intermediate layers~$\phi_i,\ i=1,\ldots,L-1$ are initialized to the identity function, while the last non-linear function~$\phi_L$ is initialized to the quadratic function.
+
+As a source of natural image patches, we consider the BSDS500 dataset~\cite{MaFo01} and randomly extract~$96\times 96$ image patches to define the empirical distribution~$\dist{X}$.
+In the implementation, we sample the smoothing parameter from a uniform distribution, i.e., $\widehat{t}\sim\mathcal{U}(\tminh,\tmaxh)$.
+To minimize the training loss~\eqref{eq:losslog}, the AdaBelief~\citep{ZhTa20} optimizer is used for $100\ 000$ iterations using a mini-batch size of~$128$ along with an initial learning rate of $10^{-3}$.
+The learning rate is annealed to~$5\cdot 10^{-5}$ using a cosine scheme.
+We utilize the AdaBelief optimizer since it performs preconditioning based on local curvature information.
+Thus, it is well suited to learn parameters that lie in different intervals.
+
+You can have as much text here as you want. The main body must be at most $8$ pages long.
+For the final version, one more page can be added.
+If you want, you can use an appendix like this one, even using the one-column format.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 \end{document}
+
+
+% This document was modified from the file originally made available by
+% Pat Langley and Andrea Danyluk for ICML-2K. This version was created
+% by Iain Murray in 2018, and modified by Alexandre Bouchard in
+% 2019 and 2021 and by Csaba Szepesvari, Gang Niu and Sivan Sabato in 2022. 
+% Previous contributors include Dan Roy, Lise Getoor and Tobias
+% Scheffer, which was slightly modified from the 2010 version by
+% Thorsten Joachims & Johannes Fuernkranz, slightly modified from the
+% 2009 version by Kiri Wagstaff and Sam Roweis's 2008 version, which is
+% slightly modified from Prasad Tadepalli's 2007 version which is a
+% lightly changed version of the previous year's version by Andrew
+% Moore, which was in turn edited from those of Kristian Kersting and
+% Codrina Lauth. Alex Smola contributed to the algorithmic style files.
