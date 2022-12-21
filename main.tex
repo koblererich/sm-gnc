@@ -209,17 +209,17 @@ Second, the schedule of the smoothing parameter is a priori fixed, for instance,
 Finally, as we proved above, there exists a smoothing parameter such that the associated energy becomes convex in most practical cases.
 
 To combine the best of both approaches, we propose the annealed graduated non-convexity scheme described in~\Algref{alg:graduatedNC}.
-In particular, we first fix a decreasing sequence of smoothing parameters~$\{t^i\}_{i=0}^I$ such that the enegy~$F(\vx,t^0)$ is convex.
-Due to smoothness and convexity, we know that the conditional minimal MSE estimator~$\vx^1$ computed by Tweedie's identity~\citep{Ro56,Ef11} is close to the mode of~$F(\vx,t^0)$.
-Then this estimator is gradually refined by reducing the smoothing~$t^{i-1}<t^i$ and updating the MMSE estimator conditioned on the previous result.
+In particular, we first fix a decreasing sequence of smoothing parameters~$\{t_i\}_{i=0}^I$ such that the enegy~$F(\vx,t_0)$ is convex.
+Due to smoothness and convexity, we know that the conditional minimal MSE estimator~$\vx^1$ computed by Tweedie's identity~\citep{Ro56,Ef11} is close to the mode of~$F(\vx,t_0)$.
+Then this estimator is gradually refined by reducing the smoothing~$t_{i-1}<t_i$ and updating the MMSE estimator conditioned on the previous result.
 
 \begin{algorithm}[t]
 \caption{Annealed graduated non-convexity scheme for minimizing a smoothed family of energies~$F(\vx,t)$}\label{alg:graduatedNC}
-\textbf{Step 0:} Take~$I\in\N$, define sequence $\{t^i\}_{i=0}^I\subset[\tmin,\tmax]$ s.t.~$t^{i}>t^{i+1}$ and~$F(\vx,t^0)$ convex, $\vx^0\in\X$ \\
+\textbf{Step 0:} Take~$I\in\N$, define sequence $\{t_i\}_{i=0}^I\subset[\tmin,\tmax]$ s.t.~$t_{i}>t_{i+1}$ and~$F(\vx,t_0)$ convex, $\vx_0\in\X$ \\
 \textbf{Step i:} $(0\leq i< I)$ 
-Approximately minimize current energy~$F(\cdot,t^i)$ using single step
+Approximately minimize current energy~$F(\cdot,t_i)$ using single step
 \[
-\vx^{i+1}=\vx^i-t^i \nabla_\vx F(\vx^i,t^i)
+\vx_{i+1}=\vx_i-t_i \nabla_\vx F(\vx_i,t_i)
 \] 
 \end{algorithm}
 
@@ -235,7 +235,7 @@ As can be seen, increasing the smoothing parameter~$t$ results in smoother and m
 The colored lines visualize the trajectories of~\Algref{alg:graduatedNC} for $64$ equally spaces initial samples on~$[-3,3]$ using only~$I=12$ steps.
 Note that all trajectories converge to the global minimum.
 
-The plot on the right in \figref{fig:gmmOptimization} visualizes the rate of trajectories converging to the global minimum as a function of the initial smoothing~$t^0$.
+The plot on the right in \figref{fig:gmmOptimization} visualizes the rate of trajectories converging to the global minimum as a function of the initial smoothing~$t_0$.
 The trajectories start from~$N=1\ 000$ equally spaced initial positions~$x^0$ on $[-3,3]$.
 The different lines encode how many annealed graduated non-convexity steps~$I$ were performed.
 The lines show that for increasing initial smoothing fewer steps are required such that all trajectories converge to the global minimum.
@@ -245,9 +245,9 @@ The lines show that for increasing initial smoothing fewer steps are required su
 \includegraphics[width=.45\linewidth]{figures/ex_gmm/ex_gmm_opt}\hfill
 \includegraphics[width=.54\linewidth]{figures/ex_gmm/ex_gmm_acc}
 \label{fig:gmmOptimization}
-\caption{Left: Illustration of the 1D example energy~\eqref{eq:gmmEx} using gray lines. The color lines demonstrate graduated non-convexity trajectories using $I=12$ steps on a logarithmic scale from~$t^0=1$ to $t^{10}=10^{-4}$; all trajectories end at the global minimum~$x=-\frac12$.
-Right: Visualization of the rate of trajectories attaining the global minimum using~$N=1\ 000$ equally spaced initial points as a function of the initial smoothing time~$t^0$ for a different number of steps~$I\in\{10,100,1\ 000,10\ 000\}$.
-The larger the initial smoothing parameter~$t^0$, the fewer steps are required to obtain the perfect rate.
+\caption{Left: Illustration of the 1D example energy~\eqref{eq:gmmEx} using gray lines. The color lines demonstrate annealed GNC trajectories using $I=12$ steps on a logarithmic scale from~$t_0=1$ to $t^{10}=10^{-4}$; all trajectories end at the global minimum~$x=-\frac12$.
+Right: Visualization of the rate of trajectories attaining the global minimum using~$N=1\ 000$ equally spaced initial points as a function of the initial smoothing time~$t_0$ for a different number of steps~$I\in\{10,100,1\ 000,10\ 000\}$.
+The larger the initial smoothing parameter~$t_0$, the fewer steps are required to obtain the perfect rate.
 }
 \end{figure}
 
@@ -301,7 +301,7 @@ Further details about the parametrization of the activation functions can be fou
 This idea follows recent suggestions to facilitate spline-based parametric activation functions in deep CNNs~\citep{OcMe18,AzGu20}.
 
 
-\subsection{Learning Parametric Models on the Space of Image}
+\subsection{Learning Parametric Models on the Space of Images}
 Here, we elaborate on how to fit the parameters of the previously defined regularizers~$R_L\colon\X,\T,\Theta\to\R$ to the negative score of the \emph{joint} density~$\pdf{\rvy,\rt}:\X\times\T\to\R_+$ of the data.
 For our previously defined degradation model, the joint density function reads as
 \begin{align*}
@@ -384,8 +384,9 @@ The kernel~$\varphi\colon\R\to\R$ is given by the quartic spline, i.e.,
 0 &\text{else}
 \end{cases}.
 \]
-Clearly, these activation functions are computationally much more expensive than simple ReLU-activations.
+These activation functions are computationally much more expensive than simple ReLU-activations.
 However, the spline-based activation functions are much more expressive and several implementation tricks can be used to compute these activation functions efficiently.
+The non-linear functions of the intermediate layers~$\phi_i,\ i=1,\ldots,L-1$ are initialized to the identity function, while the last non-linear function~$\phi_L$ is initialized to the quadratic function.
 
 
 
@@ -422,10 +423,10 @@ The data fidelity models the forward problem and ensures consistency to the obse
 Throughout this section, we assume that the data fidelity term has a simple proximal mapping, which is the case for many inverse problems in imaging.
 To utilize the statistical knowledge of our learned prior~$R_L$, we next describe suitable ways to handle the additional smoothing parameter~$\widehat{t}$.
 
-\subsection{Joint Optimization}
+\subsection{Joint Optimization} \label{sec:jointOptimization}
 As presented in \secref{sec:gnc}, decreasing the smoothing parameter~$\widehat{t}$ results in peakier and more non-convex energies.
 Thus, there are pronounced local minima at~$\tminh$ and $\frac{\partial}{\partial\widetilde{t}}R_L$ is likely to point toward~$\tminh$.
-Consequently, minimizing the joint energy is reasonable.
+Consequently, it is reasonable to minimize the joint energy also w.r.t. the smoothing parameter~$\widetilde{t}$.
 Thus, we seek to solve the optimization problem
 \begin{align} \label{eq:jointEnergy}
 \min_{\vx\in\X,\ \widehat{t}\in[\tminh,\tmaxh]} \left\{E(\vx,\widehat{t})\coloneqq R_L(\vx,\widehat{t}) + D(\vz,\vx)\right\}
@@ -434,8 +435,8 @@ using an alternating proximal gradient scheme~\citep{BoSa14} and Lipschitz backt
 The algorithm is summarized in~\algref{alg:jointMinimization}.
 
 \begin{algorithm}[t]
-\caption{Proximal alternating linearization method using Lipschitz backtracking.}\label{alg:jointMinimization}
-\textbf{Step 0:} Take $L_\vx^0,L_\hatt^0>0$, some~$\gamma_1,\gamma_2\in(0,1)$ and~$\vx^0\in\X$, $\hatt^0\in[\tminh,\tmaxh]$\\
+\caption{Proximal alternating linearization method (PALM) with Lipschitz backtracking.}\label{alg:jointMinimization}
+\textbf{Step 0:} Take $L_\vx^0,L_\hatt^0>0$, some~$\gamma_1,\gamma_2\in(0,1)$ and~$\vx^0\in\X$, $\hatt_0\in[\tminh,\tmaxh]$\\
 \textbf{Step i:} $(i\geq 0)$ 
 \begin{enumerate}
 \item
@@ -457,9 +458,7 @@ Set $\hatt_{i+1}=\hatt$ and $L_\hatt^{i+1}=\max\left(\tfrac{\gamma_2}{\eta},1\ri
 \end{enumerate}
 \end{algorithm}
 
-\todo{include and describe numerical results}
-
-\subsection{Predefined Smoothing Schedule}
+\subsection{Predefined Smoothing Schedule} \label{sec:predefinedSchedule}
 The second approach is motivated by recent DDPM models~\citep{SoEr19,HoJa20}.
 The idea is to first define a decreasing schedule for the smoothing parameter~$\{\widehat{t}_i\}_{i=1}^n$ such that~$\tmaxh>\widehat{t}_1$, $\widehat{t}_i>\widehat{t}_{i+1}$ for~$i=1,\ldots,n-1$ and $\widehat{t}_n=\tminh$.
 Then, this sequence defines a family of optimization problems
@@ -467,75 +466,43 @@ Then, this sequence defines a family of optimization problems
 \vx_i =\argmin_{\vx\in\X} \left\{E(\widehat{t}_i)\coloneqq R_L(\vx,\widehat{t}_i)+D(\vz,\vx)\right\}
 \]
 that are sequentially minimized using the proximal gradient scheme~\citep{Be17}
-\[
+\begin{align} \label{eq:fixedScheme}
 \vx_{i+1} = \prox_{\eta_iD(\vz,\cdot)}(\vx_i-\eta_i\nabla_\vx R_L(\vx_i,\widehat{t}_i)),
-\]
+\end{align}
 where~$\eta_i$ is the step size at the~$i^\text{th}$ iteration.
 Note that we perform only a single proximal-gradient step on every energy~$E(\widehat{t}_i)$ since the energies smoothly change along~$\widehat{t}$ for large enough~$n$.
 For selecting the step sizes, we consider Tweedie's identity as in \secref{sec:gnc}.
-In particular, Tweedie's formula states that a gradient step on the log-density of noisy images (degraded by additive Gaussian noise) scaled by the variance results in the conditional mean squared estimator.
+In particular, Tweedie's formula states that a gradient step on the log density of noisy images (degraded by additive Gaussian noise) scaled by the variance results in the conditional mean squared estimator.
 Using the training objective~\eqref{eq:losslog}, our priors learned to approximate the negative log-density of noisy image patches for any smoothing parameter~$\widetilde{t}$.
 Thus, we obtain an approximation of the conditional mean estimator by setting the step size to an estimate of the variance~$\eta_i=\exp(\widehat{t}_i)$.
+Note that the proximal mapping in~\eqref{eq:fixedScheme} ensures data consistency and thereby frequently reintroduces some noise into~$\vx_{i+1}$.
 
-\todo{include and describe numerical results}
+\subsection{Task-specifig Learning of Smoothing Schedule} \label{sec:learnedVN}
+Since it is not clear how to choose the predefined smoothing scheduler~$\{\widehat{t}_i\}_{i=1}^n$, why not learn it from data for a specific task?
+To do so, we propose to ``unroll'' the optimization scheme~\eqref{eq:fixedScheme} for $n\in\N$ steps and learn all~$\{\hatt_i\}_{i=1}^n$ and~$\{\eta_i\}_{i=1}^n$ such that the final output~$\vx_n$ is close to its corresponding ground truth.
+Since the gradient w.r.t.~$\hatt$ of all~$R_L$ are smooth due to the quartic spline interpolation, any gradient-based optimization algorithm can be used for learning.
 
-
-
-\subsection{Task-specifig Learning of Smoothing Schedule}
-The results of the previous sections suggest that the performance can be increased by adapting the smoothing schedule.
-Therefore, we propose to ``unroll'' the optimization of the family of smoothed energies~$E(\hatt)$ for $n\in\N$ steps and learn the smoothing schedule~$\{\hatt_i\}_{i=1}^n$ as well as the step sizes~$\{\eta_i\}_{i=1}^n$ from data.
-Since the gradient w.r.t.~$\hatt$ of each prior~$R_L$ is smooth due to the quartic spline interpolation, any non-convex gradient-based optimization algorithm can be used.
-
-Interestingly, this observation relates the successful trainable non-linear reaction-diffusion (TNRD) models of~\citet{ChPo16} and variational networks (VNs)~\citep{KoKl17,HaKl18,EfKo20} to diffusion-based models by means of joint priors on the space of image patches.
+Interestingly, this observation relates the successful trainable non-linear reaction-diffusion (TNRD) models of~\citet{ChPo16} and variational networks (VNs)~\citep{KoKl17,HaKl18,EfKo20} to diffusion-based models through joint priors on the space of image patches.
 Thus, variational networks -- with temporally changing parameters across the steps -- can be interpreted as a learned proximal-gradient scheme on a gradually more non-convex energy.
 This relation enables an unsupervised pretraining of the prior advocated in TNRDs or VNs, followed by a task-specific fine-tuning of either just the smoothing schedule or the entire model.
 
-In contrast to the two previous approaches, we only need to define the number of steps~$n$ as a hyperparameter, which is typically constrained by the time budget in applications.
-
-\todo{include and describe numerical results}
-
-
-
-
-% \subsection{Convergence of Sequence induced by Proximal--Gradient scheme}
-% Next, we apply the learned noise-conditional energy~$R(\vx,t)$ to solve inverse problems.
-% In details, we utilize the learned regularization functions in a variational problem of the form
-% \[
-% \min_{\vx} \left\{E(\vx, t) \coloneqq R(\vx,t) + \lambda D(\vx, \vz) \right\}.
-% \]
-% Here $\lambda$ is a parameter that balances regularization and data fidelity and typically accounts for the noise-level in the measurements~$\vz$.
-% Let us assume that the proximal map on the data fidelity term~$D$ is simple to compute (e.g., denoising, inpainting, deblurring, super-resolution, magnetic resonance reconstruction).
-% Then one could use the proximal gradient method~\citep{Be17} defined as follows
-% \begin{align}\label{eq:proxGrad}
-% \vx_{k+1} = \prox_{\tau_k\lambda D}\left(\vx_k - \tau_k\nabla_{\vx}R(\vx_k,t_k)\right),
-% \end{align}
-% where~$\tau_k>0$ is the step size of the $k^\mathrm{th}$ step.
-% Tweedie's formula~\citep{Ro56,RaSi11} suggests that the conditional mean given a noisy sample can be computed by performing a gradient step on the log noisy distribution and the step size is given by the variance, i.e.
-% \[
-% \E_{\vx\sim p_{X\vert Z}(\vx\vert Z=\vz)}\{x\}=\vz+ t \nabla_\vz\log p_Z(\vz).
-% \]
-% For now assume that the learned regularizer perfectly matches the distribution of noisy images.
-% Then, we observe that the gradient step in~\eqref{eq:proxGrad} implements Tweedie's formula if $\tau_k$ reflects the variance of~$\vx_k$, which is estimated by~$t_k$.
-% This results in the following algorithm
-% \[
-% \vx_{k+1} = \prox_{t_k\lambda D}\left(\vx_k - t_k\nabla_{\vx}R(\vx_k,t_k)\right).
-% \]
-% \citep{Be15} for Banach fixed point theorem and Krasnosel'skii--Mann theorem.
-
-% \subsection{Probabilistic Scale Space}
-
-% The underlying idea of score matching~\cite{Hy05} is to fit a parametric model to a data distribution~$p_X$.
-% However, an essential requirement of explicit score matching is that the data distribution is differentiable, which is not the case in many setting~\todo{provide some examples}.
-% To circumvent this drawback, Vincent~\cite{Vi11} introduced denoising score matching, i.e., explicit score matching on a smoothed data distribution.
-% Here, the smoothing is typically performed by means of additive Gaussian noise with a small variance.
-% Due to the full support of the Gaussian probability density, the explicit score matching problem becomes well-defined.
-% Recently, \cite{SoEr19} introduced noise conditional score matching.
-
-
+In contrast to the two previous approaches in sections~\ref{sec:jointOptimization} and \ref{sec:predefinedSchedule}, we only need to define the number of steps~$n$ as a hyperparameter, which is typically constrained by the time budget in applications.
+Moreover, if only the smoothing schedule and the step sizes are learned, just a few paired samples are required.
 
 
 % -----------------------------------------------------------------------------------------------------
 \section{Experimental Results}
+In this section, we first analyze the learned regularizers on the space of images.
+Then, we compare their performance on two simple imaging tasks -- image denoising and inpainting -- using the three different methods introduced in \secrefs{sec:jointOptimization}{sec:predefinedSchedule}{sec:learnedVN}.
+
+\begin{figure}[t]
+    \includegraphics[width=.9\linewidth]{figures/results/plots_denoise_inpaint}
+    \label{fig:plotsDenoiseInpaint}
+    \caption{Comparison of the different smoothing parameter schedules for image denoising (top row) and image inpainting (bottom row).
+    The columns depict from left to right the energy, PSNR score, and the corresponding smoothing schedule.
+    The different regularizers~$R_L$ are identified by the linestyle, whereas the smoothing parameter schedule is identified by color.
+    }
+\end{figure}
 
 TODO:
 \begin{itemize}
