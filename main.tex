@@ -1,17 +1,18 @@
-%%%%%%%% ICML 2022 EXAMPLE LATEX SUBMISSION FILE %%%%%%%%%%%%%%%%%
+%%%%%%%% ICML 2023 EXAMPLE LATEX SUBMISSION FILE %%%%%%%%%%%%%%%%%
 
-\documentclass[nohyperref]{article}
+\documentclass{article}
 
 % Recommended, but optional, packages for figures and better typesetting:
 \usepackage{microtype}
 \usepackage{graphicx}
+\usepackage{tikz}
 \usepackage{subfigure}
 \usepackage{booktabs} % for professional tables
 
 % hyperref makes hyperlinks in the resulting PDF.
 % If your build breaks (sometimes temporarily if a hyperlink spans a page)
 % please comment out the following usepackage line and replace
-% \usepackage{icml2022} with \usepackage[nohyperref]{icml2022} above.
+% \usepackage{icml2023} with \usepackage[nohyperref]{icml2023} above.
 \usepackage{hyperref}
 
 
@@ -19,10 +20,10 @@
 \newcommand{\theHalgorithm}{\arabic{algorithm}}
 
 % Use the following line for the initial blind version submitted for review:
-\usepackage{icml2022}
+\usepackage{icml2023}
 
 % If accepted, instead use the following line for the camera-ready submission:
-% \usepackage[accepted]{icml2022}
+% \usepackage[accepted]{icml2023}
 
 % For theorems and such
 \usepackage{amsmath}
@@ -90,16 +91,16 @@
 
 % The \icmltitle you define below is probably too long as a header.
 % Therefore, a short form for the running title is supplied here:
-\icmltitlerunning{TODO change template to 2023}
+\icmltitlerunning{Learned Diffusion Models Follow Graduated Non-Convexity Principle}
 
 \begin{document}
 
 \twocolumn[
-\icmltitle{On Links between Diffusion Models, Graduated non-convexity, and\\ Variational Networks}
+\icmltitle{Learned Diffusion Models Follow Graduated Non-Convexity Principle}
 
 % It is OKAY to include author information, even for blind
 % submissions: the style file will automatically remove it for you
-% unless you've provided the [accepted] option to the icml2022
+% unless you've provided the [accepted] option to the icml2023
 % package.
 
 % List of affiliations: The first argument should be a (short)
@@ -159,8 +160,36 @@ Abstracts must be a single paragraph, ideally between 4--6 sentences long.
 Gross violations will trigger corrections at the camera-ready phase.
 \end{abstract}
 
+First implementation of diffusion based models~\cite{SoJa15}; newly discovered and leading to remarkable image generation results~\cite{HoJa20,SoEr20,RoBl22}
+
+\cite{NiDh21} improved training strategy 
+
+
+Variational diffusion models~\cite{KiSa21} showed the equivalence of diffusion models (noise preserving, noise exploding, \ldots) in continuous time.
+
+
+Continuous Diffusion for Categorical Data (CDCD)~\cite{DiSa22} space and time continuous by score interpolation in time and time warping to adapt the capacity of model over time (Jonas Adler).
+
+
+Learning maximal monotone operators~\cite{PeRe21, TeRe21}
+
+
+TODO:
+\begin{itemize}
+    \item in eq (3) remove dependency of $\theta$ or $R_L$
+\end{itemize}
+
 % -----------------------------------------------------------------------------------------------------
 \section{Introduction}
+
+Main points:
+\begin{itemize}
+    \item DM actually learn GNC scheme
+    \item We show effectiveness of GNC on a simple example, i.e., smaller number of steps are required to obtain the global minimum
+    \item 
+    \item relation to variational networks
+    \item it is not clear if the score networks implement a gradient, thus we parameterize the energy directly
+\end{itemize}
 
 % -----------------------------------------------------------------------------------------------------
 \section{Background}
@@ -187,9 +216,9 @@ We further assume an absolutely continuous probability measure with correspondin
 Later, we will also consider a discrete probability measure defined by the empirical distribution of a dataset~$\{\vx_i\}_{i=1}^n\subset\X$ with cardinality~$n\in\N$.
 In addition, we consider variances~$t\in\T$, with the compact interval~$\T=[\tmin,\tmax]$ where $0<\tmin<\tmax<\infty$.
 
-In this setting, we show that noise-conditional score matching (NCSM)~\citep{SoEr19} as well as denoising diffusion probabilistic models (DDPM)~\citep{HoJa20} actually learn a graduated-nonconvexity scheme~\citep{BlZi87}.
-In detail, in both NCSM and DDPM a neural network is trained to learn a conditional score, i.e., the gradient of the log density of the data degraded by additive Gaussian noise with variance~$t$.
-The conditioning is either directly on the variance (NCSM) or a diffusion time (DDPM), which encodes the variance by a one-to-one schedule.
+In this setting, we show that noise-conditional score matching (NCSM)~\citep{SoEr19} as well as denoising diffusion probabilistic models (DDPM)~\citep{HoJa20} actually learn a graduated non-convexity (GNC) scheme~\citep{BlZi87}.
+In detail, both NCSM and DDPM train a neural network to learn a conditional score, i.e., the gradient of the log density of the data degraded by additive Gaussian noise with variance~$t$.
+The conditioning is either directly on the variance (NCSM) or a diffusion time (DDPM), which encodes the variance.
 The key observation is that although the data becomes noisier with increasing~$t$, the corresponding smooth probability density~$\pdf{\rvx\vert\rt}$ gets smoother and its associated energy~$F(\vx,t)=-\log\pdf{\rvx\vert\rt}(\vx,t)$ gets more \emph{convex}, see the left plot in Figure~\ref{fig:gmmOptimization}.
 Next, we prove that in the considered setting there indeed exists a lower bound on the variance~$\widetilde{t}$ such that the energy of the conditional density is convex for~$t\geq\widetilde{t}$.
 
@@ -242,52 +271,53 @@ Third, the initial problem is efficiently solved due to increased smoothness and
 Then, the parameter is reduced such that the energy becomes gradually more non-convex.
 The resulting energy is minimized using the previous solution as initialization and the process is repeated until convergence of the energy corresponding to the smallest parameter.
 
-Comparing NCSM and DDPM to graduated non-convexity, we observe the following similarities:
+Comparing NCSM and DDPM to GNC, we observe the following similarities:
 First, the score networks also approximate a one-parameter family of the gradient of associated energies.
 Second, the schedule of the smoothing parameter is a priori fixed, for instance, by the variance schedule of an annealed Langevin algorithm~\citep{SoEr19} or the diffusion time~\citep{HoJa20}.
 Finally, as we proved above, there exists a smoothing parameter such that the associated energy becomes convex in most practical cases.
 
-To combine the best of both approaches, we propose the annealed graduated non-convexity scheme described in~\Algref{alg:graduatedNC}.
+To combine the best of both approaches, we propose the annealed GNC scheme described in~\Algref{alg:graduatedNC}.
 In particular, we first fix a decreasing sequence of smoothing parameters~$\{t_i\}_{i=0}^I$ such that the enegy~$F(\vx,t_0)$ is convex.
 Due to smoothness and convexity, we know that the conditional minimal MSE estimator~$\vx^1$ computed by Tweedie's identity~\citep{Ro56,Ef11} is close to the mode of~$F(\vx,t_0)$.
 Then this estimator is gradually refined by reducing the smoothing~$t_{i-1}<t_i$ and updating the MMSE estimator conditioned on the previous result.
 
 \begin{algorithm}[t]
 \caption{Annealed graduated non-convexity scheme for minimizing a smoothed family of energies~$F(\vx,t)$}\label{alg:graduatedNC}
-\textbf{Step 0:} Take~$I\in\N$, define sequence $\{t_i\}_{i=0}^I\subset[\tmin,\tmax]$ s.t.~$t_{i}>t_{i+1}$ and~$F(\vx,t_0)$ convex, $\vx_0\in\X$ \\
+\textbf{Step 0:} Take~$I\in\N$, choose sequence $\{t_i\}_{i=0}^I\subset[\tmin,\tmax]$ s.t.~$t_{i}>t_{i+1}$ and~$F(\vx,t_0)$ convex, $\vx_0\in\X$, $\eta>0$ \\
 \textbf{Step i:} $(0\leq i< I)$ 
 Approximately minimize current energy~$F(\cdot,t_i)$ using single step
 \[
-\vx_{i+1}=\vx_i-t_i \nabla_\vx F(\vx_i,t_i)
+\vx_{i+1}=\vx_i-t_i\eta \nabla_\vx F(\vx_i,t_i)
 \] 
 \end{algorithm}
 
-To illustrate the effectiveness of the annealed graduated non-convexity approach, we consider a simple 1D example.
+\begin{figure}[th]
+\centering
+\includegraphics[width=.7\linewidth]{./figures/ex_gmm/ex_gmm_func}\\[1em]
+\includegraphics[width=.85\linewidth]{./figures/ex_gmm/ex_gmm_rate}
+\label{fig:gmmOptimization}
+\caption{Top: Illustration of the 1D example energy~\eqref{eq:gmmEx} using gray lines for different~$t\in[10^{-4},1]$.
+Center: Visualization of the rate of trajectories attaining the global minimum at~$x=\frac{1}{2}$ using~$N=1\ 000$ equally spaced initial points as a function of the initial smoothing time~$t_0$ for a different number of steps~$I$.
+The larger the initial smoothing parameter~$t_0$, the fewer steps are required to obtain the perfect rate.
+Bottom: If the smallest second derivative of~$F$ w.r.t.~$x$ is positive anywhere for~$t_0$, it is convex.
+}
+\end{figure}
+To illustrate the effectiveness of the annealed GNC approach, we consider a simple 1D example.
 In particular, we use the smoothed GMM corresponding to the energy
 \begin{align} \label{eq:gmmEx}
-F(x,t)=-\log\big(\tfrac{7}{10}&G\left(-\tfrac12,\tfrac{1}{1000}+t\right)(x)\\
-+\tfrac{3}{10}&G\left(\tfrac12,\tfrac14+t\right)(x)\big) \notag
+F(x,t)=-\log\left(\sum_{i=1}^5 w_i G\left(\mu_i,\sigma_i^2+t\right)(x)\right)
 \end{align}
-consisting of two components over the domain $x\in[-3,3]$ and $t\in[10^{-4},1]$.
-Note that the addition of $t$ at the variances originates from the convolution of the data density with a Gaussian as considered in Theorem~\ref{thm:Fconvex}.
-This energy is illustrated by the black lines on the left in~\figref{fig:gmmOptimization} for various~$t$.
+consisting of five components over the domain $x\in[-3,3]$ and $t\in[10^{-4},1]$.
+The detailed parameters are~$\bm{w}=\tfrac{1}{100}(5\ 15\ 15\ 60\ 5)$, $\bm{\mu}=(-1\ -\tfrac12\ 0\ \tfrac12\ 1)$, and $\bm{\sigma}^2=\tfrac{1}{100}(10\ 1\ 5\ 1\ 10)$.
+Note that the addition of $t$ at the variances in~\eqref{eq:gmmEx} originates from the convolution of the data density with a Gaussian as considered in Theorem~\ref{thm:Fconvex}.
+This energy is illustrated by the black lines at the top in~\figref{fig:gmmOptimization} for various~$t$.
 As can be seen, increasing the smoothing parameter~$t$ results in smoother and more convex energies.
-The colored lines visualize the trajectories of~\Algref{alg:graduatedNC} for $64$ equally spaces initial samples on~$[-3,3]$ using only~$I=12$ steps.
-Note that all trajectories converge to the global minimum.
 
-The plot on the right in \figref{fig:gmmOptimization} visualizes the rate of trajectories converging to the global minimum as a function of the initial smoothing~$t_0$.
-The trajectories start from~$N=1\ 000$ equally spaced initial positions~$x^0$ on $[-3,3]$.
-The different lines encode how many annealed graduated non-convexity steps~$I$ were performed.
-The lines show that for increasing initial smoothing fewer steps are required such that all trajectories converge to the global minimum.
-\begin{figure*}[t]
-\hfill\includegraphics[width=.4\linewidth]{./figures/ex_gmm/ex_gmm_opt}\hfill
-\includegraphics[width=.5\linewidth]{./figures/ex_gmm/ex_gmm_acc}\hfill
-\label{fig:gmmOptimization}
-\caption{Left: Illustration of the 1D example energy~\eqref{eq:gmmEx} using gray lines. The color lines demonstrate annealed GNC trajectories using $I=12$ steps on a logarithmic scale from~$t_0=1$ to $t^{10}=10^{-4}$; all trajectories end at the global minimum~$x=-\frac12$.
-Right: Visualization of the rate of trajectories attaining the global minimum using~$N=1\ 000$ equally spaced initial points as a function of the initial smoothing time~$t_0$ for a different number of steps~$I\in\{10,100,1\ 000,10\ 000\}$.
-The larger the initial smoothing parameter~$t_0$, the fewer steps are required to obtain the perfect rate.
-}
-\end{figure*}
+The plot in the center of \figref{fig:gmmOptimization} visualizes the rate of trajectories converging to the global minimum at~$x=\tfrac12$ as a function of the initial smoothing~$t_0$ and the number of performed steps~$I$.
+For each~$t_0$ all trajectories start from~$N=1\ 000$ equally spaced initial positions~$x^0$ on $[-3,3]$ and are defined by performing $I$~annealed GNC steps using a logarithmic smoothing schedule.
+By comparing the different contour lines we observe that for larger initial smoothing fewer steps are required such that all trajectories converge to the global minimum.
+This highlights the effectiveness of the GNC approach.
+Finally, the bottom plot in \figref{fig:gmmOptimization} depicts the smallest~$\frac{\partial^2}{\partial x^2}F(x,t_0)$ and thereby highlights convexity of~$F$ as a function of~$t_0$.
 
 % -----------------------------------------------------------------------------------------------------
 \section{Learning Priors on the Space of Images}
@@ -316,7 +346,7 @@ The non-linear functions~$\phi_i$ are typically learnable and implemented by sim
 Originally, \citet{RoBl09} learned the parameters (convolution kernels, and weights of the potential functions) using contrastive divergence~\citep{Hi02}.
 
 Motivated by the results of the previous section, we next extend the FoE prior to the space of images by introducing the smoothing parameter~$t$.
-In detail, the extended FoE read as
+In detail, the extended FoE reads as
 \begin{align}\label{eq:r1}
 R_1(\vx,t) = \scal{\vec{1}}{\left(\Phi_1(\cdot, t) \circ K_1\right)(\vx)},
 \end{align}
@@ -350,7 +380,7 @@ where $\pdf{\rt}$ is the prior of the smoothing parameter.
 Then, the objective function of (explicit) score matching is given by
 \begin{align} \label{eq:jsm}
 &J_\mathrm{SM}(\theta) = \\
-&\hspace{1ex}\E_{\vy,t\sim\dist{Y,T}}\left[\tfrac12\norm{\nabla R_L(\vy,t,\theta) -\left(- \nabla\log p_{\rvy,T}(\vy,\rt)\right)}_M^2\right], \notag
+&\hspace{1ex}\E_{\vy,t\sim\dist{Y,T}}\left[\tfrac12\norm{\nabla R_L(\vy,t;\theta) -\left(- \nabla\log p_{\rvy,T}(\vy,\rt)\right)}_M^2\right], \notag
 \end{align}
 where $\nabla$ denotes the full gradient of a function and an additional index denotes the gradient w.r.t. only this variable and 
 $M\in\R^{d+1\times d+1}$ is a positive definite block-diagonal matrix, i.e.,
@@ -363,18 +393,18 @@ t\id & \vec{0} \\
 By applying the metric, we obtain
 \begin{align}\label{eq:jsmParts}
 &J_\mathrm{SM}(\theta)=\\
-&\hspace{1ex}\E_{\vy,t\sim\dist{Y,T}}\Big[\tfrac{t}{2}\norm{\nabla_\vy R_L(\vy,t,\theta) -\left(- \nabla_\vy\log p_{Y,T}(\vy,t)\right)}_2^2 \notag\\
-&\hspace{6ex}+\tfrac12\left(\tfrac{\partial}{\partial t}R_L(\vy,t,\theta) -\left(-\tfrac{\partial}{\partial t}\log p_{Y,T}(\vy,t)\right)\right)^2m_t\Big].\notag
+&\hspace{1ex}\E_{\vy,t\sim\dist{Y,T}}\Big[\tfrac{t}{2}\norm{\nabla_\vy R_L(\vy,t;\theta) -\left(- \nabla_\vy\log p_{Y,T}(\vy,t)\right)}_2^2 \notag\\
+&\hspace{6ex}+\tfrac12\left(\tfrac{\partial}{\partial t}R_L(\vy,t;\theta) -\left(-\tfrac{\partial}{\partial t}\log p_{Y,T}(\vy,t)\right)\right)^2m_t\Big].\notag
 \end{align}
 Note that~$J_\mathrm{SM}$ decouples into a score matching objective on noisy images~$\vy$ and the smoothing parameter~$t$; the metric (in particular~$m_T>0$) enables balancing of both terms.
 The scaling of the first term by~$t$ is a common variance reduction technique in denoising score matching~\citep{SoEr19,HuLi21}.
 
 To avoid the computation of the expectation over the true data in the gradient of the joint distribution, we apply denoising score matching to the noisy image term.
-In addition, we replace the score matching objective w.r.t. to~$t$ by its implicit pendant and get
+In addition, we replace the score matching objective w.r.t.~$t$ by its implicit pendant and get
 \begin{align*}
 &J_\mathrm{SM}(\theta)=\\
-&\hspace{1ex}\E_{\vx,\vy,t\sim\dist{X,Y,T}}\left[\tfrac{t}{2}\norm{\nabla_\vy R_L(\vy,t,\theta) -\tfrac{1}{t}(\vy-\vx)}_2^2 \right.\\
-&\hspace{5ex}+ \left. \tfrac{m_t}{2}\left(\left(\tfrac{\partial}{\partial t}R_L(\vy,t,\theta)\right)^2 -2\tfrac{\partial^2}{\partial t^2}R_L(\vy,t,\theta)\right)\right] + C,
+&\hspace{1ex}\E_{\vx,\vy,t\sim\dist{X,Y,T}}\left[\tfrac{t}{2}\norm{\nabla_\vy R_L(\vy,t;\theta) -\tfrac{1}{t}(\vy-\vx)}_2^2 \right.\\
+&\hspace{5ex}+ \left. \tfrac{m_t}{2}\left(\left(\tfrac{\partial}{\partial t}R_L(\vy,t;\theta)\right)^2 -2\tfrac{\partial^2}{\partial t^2}R_L(\vy,t;\theta)\right)\right] + C,
 \end{align*}
 where $C$ is an additive constant.
 The proof can be obtained by combining the equivalence proofs of~\citet{Hy05} and~\citet{Vi11}.
@@ -382,22 +412,22 @@ To further simply the objective, we perform the change of variables~$\vy=\vx+\sq
 Then, we get the equivalent loss function
 \begin{align} \label{eq:loss}
 &J(\theta)=\\
-&\hspace{1ex}\E_{\vx,\vn,t\sim\dist{X,N,T}}\tfrac{1}{2}\left[\norm{\sqrt{t}\nabla_\vy R_L(\vy,t,\theta) -\vn}_2^2\right. \notag\\ 
-&\hspace{9ex}\left.+m_t\left(\left(\tfrac{\partial}{\partial t}R_L(\vy,t,\theta)\right)^2 -2\tfrac{\partial^2}{\partial t^2}R_L(\vy,t,\theta)\right)\right]. \notag
+&\hspace{1ex}\E_{\vx,\vn,t\sim\dist{X,N,T}}\tfrac{1}{2}\left[\norm{\sqrt{t}\nabla_\vy R_L(\vy,t;\theta) -\vn}_2^2\right. \notag\\ 
+&\hspace{9ex}\left.+m_t\left(\left(\tfrac{\partial}{\partial t}R_L(\vy,t;\theta)\right)^2 -2\tfrac{\partial^2}{\partial t^2}R_L(\vy,t;\theta)\right)\right]. \notag
 \end{align}
 In contrast to pure denoising score matching-based loss functions~\citep{SoEr19,HoJa20}, the loss~\eqref{eq:loss} introduces a regularization along the smoothing direction~$t$.
-In particular, the loss favors models with an energy~$F$ that slowly changes in this direction and is preferably convex.
+In particular, the loss favors energies~$R_L$ that slowly change in this direction and are preferably convex.
 Note that these properties are desirable for any gradient-based optimization scheme operating on the joint energy~$F$.
 
 \subsubsection{Logarithmic Reparametrization}
 The score-matching-based training ensures that the non-linear functions better approximate the score of the true data of the features as~$t\to\tmin$.
 Thus, it is reasonable to distribute the learnable weights of~$\phi_i$ toward this regime to account for the increasing complexity.
-Therefore, we facilitate the logarithmic reparametrization~$\widehat{t}=\log(t)$, $\tminh=\log(\tmin)$, and $\tmaxh=\log(\tmax)$.
+Therefore, we facilitate the logarithmic reparametrization~$\widehat{t}=\log(t)$, $\tminh=\log(\tmin)$, and $\tmaxh=\log(\tmax)$, as suggested by~\citet{KaMi22}.
 Then, the domain~$\widehat{\T}$ is on the negative halfspace and the loss~\eqref{eq:loss} changes to
 \begin{align} \label{eq:losslog}
 &\widehat{J}(\theta)=\\
-&\hspace{1ex}\E_{\vx,\vn,\widehat{t}\sim\dist{X,N,T}}\tfrac12\Bigg[\norm{e^{\widehat{t}/2}\nabla_\vy F(\vy,\widehat{t},\theta) -\vn}_2^2 \notag\\
-&\hspace{13ex}+ \left(\left(\tfrac{\partial}{\partial\widehat{t}}F(\vy,\widehat{t},\theta)\right)^2 -2\tfrac{\partial^2}{\partial \widehat{t}^2}F(\vy,\widehat{t},\theta)\right)\Bigg]. \notag
+&\hspace{1ex}\E_{\vx,\vn,\widehat{t}\sim\dist{X,N,\widehat{T}}}\tfrac12\Bigg[\norm{e^{\widehat{t}/2}\nabla_\vy R_L(\vy,\widehat{t};\theta) -\vn}_2^2 \notag\\
+&\hspace{11ex}+ \left(\left(\tfrac{\partial}{\partial\widehat{t}}R_L(\vy,\widehat{t};\theta)\right)^2 -2\tfrac{\partial^2}{\partial \widehat{t}^2}R_L(\vy,\widehat{t};\theta)\right)\Bigg]. \notag
 \end{align}
 We highlight that the gradient and the Hessian are measured on the logarithmic domain to avoid intensive regularization toward~$\tmin$.
 
@@ -429,8 +459,8 @@ To utilize the statistical knowledge of our learned prior~$R_L$, we next describ
 
 \subsection{Joint Optimization} \label{sec:jointOptimization}
 As presented in \secref{sec:gnc}, decreasing the smoothing parameter~$\widehat{t}$ results in peakier and more non-convex energies.
-Thus, there are pronounced local minima at~$\tminh$ and $\frac{\partial}{\partial\widetilde{t}}R_L$ is likely to point toward~$\tminh$.
-Consequently, it is reasonable to minimize the joint energy also w.r.t. the smoothing parameter~$\widetilde{t}$.
+Thus, there are pronounced local minima at~$\tminh$ and $\frac{\partial}{\partial\widehat{t}}R_L$ is likely to point toward~$\tminh$.
+Consequently, it is reasonable to minimize the joint energy also w.r.t. the smoothing parameter~$\widehat{t}$.
 Thus, we seek to solve the optimization problem
 \begin{align} \label{eq:jointEnergy}
 \min_{\vx\in\X,\ \widehat{t}\in[\tminh,\tmaxh]} \left\{E(\vx,\widehat{t})\coloneqq R_L(\vx,\widehat{t}) + D(\vz,\vx)\right\}
@@ -501,14 +531,34 @@ Moreover, if only the smoothing schedule and the step sizes are learned, just a 
 In this section, we first analyze the learned regularizers on the space of images.
 Then, we compare their performance on two simple imaging tasks -- image denoising and inpainting -- using the three different methods introduced in \secrefs{sec:jointOptimization}{sec:predefinedSchedule}{sec:learnedVN}.
 
-\begin{figure}[t]
-\includegraphics[width=\linewidth]{./figures/results/plots_denoise_inpaint}
-\label{fig:plotsDenoiseInpaint}
-\caption{Comparison of the different smoothing parameter schedules for image denoising (left column) and image inpainting (right column).
-The rows depict from top to bottom the energy, PSNR score, and the corresponding smoothing schedule.
-The different regularizers~$R_L$ are identified by the linestyle, whereas the smoothing parameter schedule is identified by color.
+% \begin{figure}[t]
+% \includegraphics[width=\linewidth]{./figures/results/plots_denoise_inpaint}
+% \label{fig:plotsDenoiseInpaint}
+% \caption{Comparison of the different smoothing parameter schedules for image denoising (left column) and image inpainting (right column).
+% The rows depict from top to bottom the energy, PSNR score, and the corresponding smoothing schedule.
+% The different regularizers~$R_L$ are identified by the linestyle, whereas the smoothing parameter schedule is identified by color.
+% }
+% \end{figure}
+
+
+\begin{figure*}[p]
+\begin{tikzpicture}[every node/.append style={inner sep=1mm}, label/.style={draw=black,fill=white, inner sep=.5ex,rounded corners=1ex}]
+
+\node[anchor=south] (r1) at (0,0) {\includegraphics[width=.96\linewidth]{./figures/results/params_foe}};
+\draw[black, very thick, rounded corners] (r1.north east) -- (r1.north west) -- (r1.south west) -- (r1.south east) node[midway,label,yshift=-1.25mm] {$R_1$};
+
+\node[anchor=south] (r2) at (0,-6.25) {\includegraphics[width=.96\linewidth]{./figures/results/params_foedeep}};
+\draw[black, very thick, rounded corners] (r2.north east) -- (r2.north west) -- (r2.south west) -- (r2.south east) node[midway,label,yshift=-1.25mm] {$R_2$};
+
+\node[anchor=north] (r3) at (0,-6.75) {\includegraphics[width=.96\linewidth]{./figures/results/params_foedeep3}};
+\draw[black, very thick, rounded corners] (r3.north east) -- (r3.north west) -- (r3.south west) -- (r3.south east) node[midway,label,yshift=-1.25mm] {$R_3$};
+\end{tikzpicture}
+\label{fig:paramsRegs}
+\caption{
+Visualization of the learned parameters of the proposed regularizers~$R_L$ for $L\in\{1,2,3\}$.\
+The columns show the first $10$ features.
 }
-\end{figure}
+\end{figure*}
 
 TODO:
 \begin{itemize}
@@ -521,7 +571,7 @@ TODO:
 
 
 \bibliography{references}
-\bibliographystyle{icml2022}
+\bibliographystyle{icml2023}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -662,9 +712,6 @@ The learning rate is annealed to~$5\cdot 10^{-5}$ using a cosine scheme.
 We utilize the AdaBelief optimizer since it performs preconditioning based on local curvature information.
 Thus, it is well suited to learn parameters that lie in different intervals.
 
-You can have as much text here as you want. The main body must be at most $8$ pages long.
-For the final version, one more page can be added.
-If you want, you can use an appendix like this one, even using the one-column format.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
