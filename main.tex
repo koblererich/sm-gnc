@@ -55,7 +55,7 @@
 \newcommand{\proj}{\mathrm{proj}}
 \newcommand{\tmin}{t_\mathrm{min}}
 \newcommand{\tmax}{t_\mathrm{max}}
-% \newcommand{\hatt}{\widehat{t}}
+% \newcommand{\hatt}{\hatt}
 \def\hatt{{\widehat{t}}}
 \newcommand{\tminh}{\hatt_\mathrm{min}}
 \newcommand{\tmaxh}{\hatt_\mathrm{max}}
@@ -315,22 +315,22 @@ The resulting energy is minimized using the previous solution as initialization 
 
 Comparing score-based generative models to GNC, we observe the following similarities.
 First, the score networks also approximate a one-parameter family of the gradient of associated energies.
-Second, the schedule of the smoothing parameter is a priori fixed.
+Second, the schedule of the smoothing parameter is frequently a priori fixed.
 Finally, as we proved above, there exists a smoothing parameter such that the associated energy becomes convex in most practical cases.
 
-\todo{EK: motivate by gradient flow perspective of reverse diffusion DDIM}
-To combine the best of both approaches, we propose the annealed GNC scheme described in~\Algref{alg:graduatedNC}.
-In particular, we first fix a decreasing sequence of smoothing parameters~$\{t_i\}_{i=0}^I$ such that the enegy~$F(\vx,t_0)$ is convex.
-Due to smoothness and convexity, we know that the conditional minimal MSE estimator~$\vx^1$ computed by Tweedie's identity~\citep{Ro56,Ef11} is close to the mode of~$F(\vx,t_0)$.
+To combine the best of both approaches, we propose the GNC flow described in~\Algref{alg:graduatedNC}, which is a discretization of a continuous gradient flow starting from a convex approximation.
+In detail, first a decreasing sequence of smoothing parameters~$\{t_i\}_{i=0}^I$ is fixed such that~$F(\vx,t_0)$ is convex.
+Then, we estimate the minimum by a single gradient step using the variance~$t_i$ as preconditioning, which is motivated by Tweedie's identity~\citep{Ro56,Ef11} and the fact that for a smooth and convex function the minimal means squared error (MMSE) estimator is close to its minimum.
+% Due to smoothness and convexity, we know that the conditional minimal MSE estimator~$\vx^1$ computed by Tweedie's identity~\citep{Ro56,Ef11} is close to the mode of~$F(\vx,t_0)$.
 Then this estimator is gradually refined by reducing the smoothing~$t_{i-1}<t_i$ and updating the MMSE estimator conditioned on the previous result.
 
 \begin{algorithm}[t]
-\caption{Annealed graduated non-convexity scheme for minimizing a smoothed family of energies~$F(\vx,t)$}\label{alg:graduatedNC}
+\caption{Graduated non-convexity flow for minimizing a smoothed family of energies~$F(\vx,t)$}\label{alg:graduatedNC}
 \textbf{Step 0:} Take~$I\in\N$, choose sequence $\{t_i\}_{i=0}^I\subset[\tmin,\tmax]$ s.t.~$t_{i}>t_{i+1}$ and~$F(\vx,t_0)$ convex, $\vx_0\in\X$, $\eta>0$ \\
 \textbf{Step i:} $(0\leq i< I)$ 
 Approximately minimize current energy~$F(\cdot,t_i)$ using single step
 \[
-\vx_{i+1}=\vx_i-t_i\eta \nabla_\vx F(\vx_i,t_i)
+\vx_{i+1}=\vx_i-\eta t_i\nabla_\vx F(\vx_i,t_i)
 \] 
 \end{algorithm}
 
@@ -340,12 +340,12 @@ Approximately minimize current energy~$F(\cdot,t_i)$ using single step
 \includegraphics[width=.85\linewidth]{./figures/ex_gmm/ex_gmm_rate}
 \label{fig:gmmOptimization}
 \caption{Top: Illustration of the 1D example energy~\eqref{eq:gmmEx} using gray lines for different~$t\in[10^{-4},1]$.
-Center: Visualization of the rate of trajectories attaining the global minimum at~$x=\frac{1}{2}$ using~$N=1\ 000$ equally spaced initial points as a function of the initial smoothing time~$t_0$ for a different number of steps~$I$.
-The larger the initial smoothing parameter~$t_0$, the fewer steps are required to obtain the perfect rate.
-Bottom: If the smallest second derivative of~$F$ w.r.t.~$x$ is positive anywhere for~$t_0$, it is convex.
+Center: Visualization of the rate of trajectories attaining the global minimum at~$x=\frac{1}{2}$ using~$N=1\ 000$ equally spaced initial points for different~$t_0$ and~$I$.
+The larger the initial smoothing~$t_0$, the fewer steps are required to obtain the perfect rate.
+Bottom: If the smallest second derivative of~$F$ w.r.t.~$x$ is positive anywhere for~$t_0$ if $F$ it is convex.
 }
 \end{figure}
-To illustrate the effectiveness of the annealed GNC approach, we consider a simple 1D example.
+Next we consider a simple 1D example to illustrate the effectiveness of the GNC flow.
 In particular, we use the smoothed GMM corresponding to the energy
 \begin{align} \label{eq:gmmEx}
 F(x,t)=-\log\left(\sum_{i=1}^5 w_i G\left(\mu_i,\sigma_i^2+t\right)(x)\right)
@@ -356,19 +356,18 @@ Note that the addition of $t$ at the variances in~\eqref{eq:gmmEx} originates fr
 This energy is illustrated by the black lines at the top in~\figref{fig:gmmOptimization} for various~$t$.
 As can be seen, increasing the smoothing parameter~$t$ results in smoother and more convex energies.
 
-The plot in the center of \figref{fig:gmmOptimization} visualizes the rate of trajectories converging to the global minimum at~$x=\tfrac12$ as a function of the initial smoothing~$t_0$ and the number of performed steps~$I$.
-For each~$t_0$ all trajectories start from~$N=1\ 000$ equally spaced initial positions~$x^0$ on $[-3,3]$ and are defined by performing $I$~annealed GNC steps using a logarithmic smoothing schedule.
+The plot in the center of \figref{fig:gmmOptimization} visualizes the rate of trajectories converging to the global minimum at~$x=\tfrac12$ as a function of the initial smoothing~$t_0$ and the number of steps~$I$.
+For each~$t_0$ all trajectories start from~$N=1\ 000$ equally spaced initial positions~$x^0$ on $[-3,3]$ and are defined by performing $I$~GNC flow steps using a logarithmic smoothing schedule.
 By comparing the different contour lines we observe that for larger initial smoothing fewer steps are required such that all trajectories converge to the global minimum.
-This highlights the effectiveness of the GNC approach.
+This highlights the effectiveness of the GNC.
 Finally, the bottom plot in \figref{fig:gmmOptimization} depicts the smallest~$\frac{\partial^2}{\partial x^2}F(x,t_0)$ and thereby highlights convexity of~$F$ as a function of~$t_0$.
 
 % -----------------------------------------------------------------------------------------------------
-\section{Learning Priors on the Space of Images}
-In this section, we transfer the insights gained from relations of graduated non-convexity and diffusion-based models to learn priors on the space of images.
-In this space, an image is simply a point in a high-dimensional space with a dimension equal to the number of image pixels.
+\section{Learning Gradually Non-convex Image Priors}
+In this section, we transfer the insights gained from relations of GNC and score-based generative models to learn simple priors for natural images.
 
-\subsection{Prior Models for the Space of Image Patches}
-Let $\vx\in\X\subset\R^d$ be an image patch of size~$d=m\times n\times c$, where $m$ represents its height, $n$ its width, and $c$ is the number of feature channels.
+\subsection{FoE-like Prior Models}
+Let $\vx\in\X\subset\R^d$ be an image of size~$d=m\times n\times c$, where $m$ represents its height, $n$ its width, and $c$ is the number of feature channels.
 Without loss of generality, we consider the input domain~$\X=[a,b]^d$ for $a<b$ and $a,b\in\R$.
 A popular choice is $a=0$ and $b=1$.
 Note that this domain can be obtained by a simple preprocessing step for many imaging applications.
@@ -386,9 +385,8 @@ where the linear operator~$K\colon\R^d\to\R^{d_1}$ extracts~$N_1$ features using
 The operator~$\Phi\colon\R^{d_1}\to\R^{d_1}$ applies to every feature channel~$k_i(\vx)$ a corresponding pixel-wise parametric non-linear function~$\phi_i\colon\R\to\R$, and the scalar product denotes the sum over all pixels and channels.
 The underlying idea is that every convolution kernel~$k_i$ specializes on a certain pattern and the associated non-linearity~$\phi_i$ describes the corresponding energy, i.e., the negative logarithm of the density.
 The non-linear functions~$\phi_i$ are typically learnable and implemented by simple parametric functions~\citep{RoBl09,ChRa14} or weighted radial basis functions~\citep{ChPo16,KoKl17}.
-% Originally, \citet{RoBl09} learned the parameters (convolution kernels, and weights of the potential functions) using contrastive divergence~\citep{Hi02}.
 
-Motivated by the results of the previous section, we next extend the FoE prior to the space of images by introducing the smoothing parameter~$t$.
+We next extend the FoE prior using the conditioning concept of SBGMs.
 In detail, the extended FoE reads as
 \begin{align}\label{eq:r1}
 R_1(\vx,t) = \scal{\vec{1}}{\left(\Phi_1(\cdot, t) \circ K_1\right)(\vx)},
@@ -400,19 +398,19 @@ We refer to \cref{apdx:implementationDetails} for further details regarding the 
 
 \subsubsection{Increasing Depth}
 Since the prior~\eqref{eq:r1} essentially consists of a single layer, its expressiveness is limited to simple image features.
-To overcome this limitation, we propose to stack multiple convolutions and parametric non-linear layers.
+To increase capacity, we propose to stack multiple convolutions and parametric non-linear layers.
 Then, an FoE-type prior facilitating $L$-layers reads as
-\[
+\begin{align} \label{eq:RL}
 R_L(\vx,t) = \scal{\vec{1}}{\left(\Phi_L(\cdot,t)\circ K_L\circ\cdots\circ\Phi_1(\cdot, t) \circ K_1\right)(\vx)}.
-\]
+\end{align}
 Each convolution~$K_i\colon\R^{d_{i-1}}\to\R^{d_i}$, $i=1,\ldots,L$ performs a linear combination of all input features, thereby enabling the mixing of features as typically performed in convolutional neural networks (CNNs).
 In contrast to typical CNNs, we use parametric activation functions that adapt to the corresponding feature channels.
 At every layer~$i\in\{1,\ldots,L\}$ and for any feature channel~$j\in\{1,\ldots,N_i\}$, we employ a 2D parametric point-wise function~$\phi_{ij}\in\C^3(\R\times\T,\R)$ to non-linearly process the features.
-Further details about the parametrization of the activation functions can be found in \cref{apdx:implementationDetails}.
 This idea follows recent suggestions to facilitate spline-based parametric activation functions in deep CNNs~\citep{OcMe18,AzGu20}.
+Further details on the parametric functions are in~\cref{apdx:implementationDetails}.
 
 
-\subsection{Learning Parametric Models on the Space of Images}
+\subsection{Joint Learning using Score Matching}
 Here, we elaborate on how to fit the parameters of the previously defined regularizers~$R_L\colon\X,\T,\Theta\to\R$ to the negative score of the \emph{joint} density~$\pdf{\rvy,\rt}:\X\times\T\to\R_+$ of the data.
 For our previously defined degradation model, the joint density function reads as
 \begin{align*}
@@ -439,8 +437,8 @@ By applying the metric, we obtain
 &\hspace{1ex}\E_{\vy,t\sim\dist{Y,T}}\Big[\tfrac{t}{2}\norm{\nabla_\vy R_L(\vy,t;\theta) -\left(- \nabla_\vy\log p_{Y,T}(\vy,t)\right)}_2^2 \notag\\
 &\hspace{6ex}+\tfrac12\left(\tfrac{\partial}{\partial t}R_L(\vy,t;\theta) -\left(-\tfrac{\partial}{\partial t}\log p_{Y,T}(\vy,t)\right)\right)^2m_t\Big].\notag
 \end{align}
-Note that~$J_\mathrm{SM}$ decouples into a score matching objective on noisy images~$\vy$ and the smoothing parameter~$t$; the metric (in particular~$m_T>0$) enables balancing of both terms.
-The scaling of the first term by~$t$ is a common variance reduction technique in denoising score matching~\citep{SoEr19,HuLi21}.
+Note that~$J_\mathrm{SM}$ decouples into a score matching objective on noisy images~$\vy$ and the smoothing parameter~$t$; the metric (in particular~$m_t>0$) enables balancing of both terms.
+The scaling of the first term by~$t$ is a common variance reduction technique in denoising SM~\citep{SoEr19,HuLi21}.
 
 To avoid the computation of the expectation over the true data in the gradient of the joint distribution, we apply denoising score matching to the noisy image term.
 In addition, we replace the score matching objective w.r.t.~$t$ by its implicit pendant and get
@@ -458,32 +456,32 @@ Then, we get the equivalent loss function
 &\hspace{1ex}\E_{\vx,\vn,t\sim\dist{X,N,T}}\tfrac{1}{2}\left[\norm{\sqrt{t}\nabla_\vy R_L(\vy,t;\theta) -\vn}_2^2\right. \notag\\ 
 &\hspace{9ex}\left.+m_t\left(\left(\tfrac{\partial}{\partial t}R_L(\vy,t;\theta)\right)^2 -2\tfrac{\partial^2}{\partial t^2}R_L(\vy,t;\theta)\right)\right]. \notag
 \end{align}
-In contrast to pure denoising score matching-based loss functions~\citep{SoEr19,HoJa20}, the loss~\eqref{eq:loss} introduces a regularization along the smoothing direction~$t$.
+In contrast to typical denoising score matching-based loss functions~\citep{SoEr19,HoJa20}, this loss introduces a regularization along the smoothing direction~$t$.
 In particular, the loss favors energies~$R_L$ that slowly change in this direction and are preferably convex.
 Note that these properties are desirable for any gradient-based optimization scheme operating on the joint energy~$F$.
 
 \subsubsection{Logarithmic Reparametrization}
 The score-matching-based training ensures that the non-linear functions better approximate the score of the true data of the features as~$t\to\tmin$.
 Thus, it is reasonable to distribute the learnable weights of~$\phi_i$ toward this regime to account for the increasing complexity.
-Therefore, we facilitate the logarithmic reparametrization~$\widehat{t}=\log(t)$, $\tminh=\log(\tmin)$, and $\tmaxh=\log(\tmax)$, as suggested by~\citet{KaMi22}.
+Therefore, we facilitate the logarithmic reparametrization~$\hatt=\log(t)$, $\tminh=\log(\tmin)$, and $\tmaxh=\log(\tmax)$, in analogy to~\citet{KaMi22}.
 Then, the domain~$\widehat{\T}$ is on the negative halfspace and the loss~\eqref{eq:loss} changes to
 \begin{align} \label{eq:losslog}
 &\widehat{J}(\theta)=\\
-&\hspace{1ex}\E_{\vx,\vn,\widehat{t}\sim\dist{X,N,\widehat{T}}}\tfrac12\Bigg[\norm{e^{\widehat{t}/2}\nabla_\vy R_L(\vy,\widehat{t};\theta) -\vn}_2^2 \notag\\
-&\hspace{11ex}+ m_t\left(\left(\tfrac{\partial}{\partial\widehat{t}}R_L(\vy,\widehat{t};\theta)\right)^2 -2\tfrac{\partial^2}{\partial \widehat{t}^2}R_L(\vy,\widehat{t};\theta)\right)\Bigg]. \notag
+&\hspace{1ex}\E_{\vx,\vn,\hatt\sim\dist{X,N,\hatt}}\frac12\Bigg[\norm{e^{\hatt/2}\nabla_\vy R_L(\vy,\hatt;\theta) -\vn}_2^2 \notag\\
+&\hspace{8ex}+ m_t\left(\left(\tfrac{\partial}{\partial\hatt}R_L(\vy,\hatt;\theta)\right)^2 -2\tfrac{\partial^2}{\partial \hatt^2}R_L(\vy,\hatt;\theta)\right)\Bigg]. \notag
 \end{align}
 We highlight that the gradient and the Hessian are measured on the logarithmic domain to avoid intensive regularization toward~$\tmin$.
 
 
-\section{Solving Inverse Problems using Priors on the Space of Images}
+\section{Solving Inverse Problems using Gradually Non-convex Image Priors}
 In various imaging applications, the task is to determine an underlying image~$\rvx$ given observations~$\rvz$.
 The observations are related to the target through the forward problem
 \[
-\rvz = A \rvx + \rvzeta
+\rvz = A \rvx + \rvzeta,
 \]
-where the random variable~$\rvzeta$ represents additive noise and the operator~$A$ describes the measurement process.
-The simplest example is image denoising, where the operator~$A=\id$ and the distribution of~$\rvzeta$ describe the noise type.
-In the case of image inpainting, the operator~$A$ applies a binary mask to every image element, which is 1 if the associated pixel is observed and 0 otherwise, and~$\rvzeta\equiv\vec{0}$.
+where~$\rvzeta$ represents additive noise and $A$ describes the measurement process.
+The simplest example is image denoising, where~$A=\id$ and the distribution of~$\rvzeta$ describe the noise type.
+In the case of image inpainting, $A$ applies a binary mask to every image element, which is 1 if the associated pixel is observed and 0 otherwise, and~$\rvzeta\equiv\vec{0}$.
 
 Frequently, the maximum a posteriori estimator is computed to approximate the target, which amounts to
 \[
@@ -496,77 +494,93 @@ In the negative log domain, we get
 \]
 which is also known as the variational approach.
 Here, the negative log-prior is equivalent to the regularizer~$R\colon\X\to\R$ and the negative log-likelihood equals the data fidelity term~$D\colon\Z\times\X\to\R$.
-The data fidelity models the forward problem and ensures consistency to the observations, whereas, the regularizer incorporates prior (statistical) knowledge of the solution.
+The data fidelity models the forward problem and ensures consistency to the observations, whereas, the regularizer incorporates prior knowledge of the solution.
 Throughout this section, we assume that the data fidelity term has a simple proximal mapping, which is the case for many inverse problems in imaging.
-To utilize the statistical knowledge of our learned prior~$R_L$, we next describe suitable ways to handle the additional smoothing parameter~$\widehat{t}$.
+To utilize the statistical knowledge of our learned prior~$R_L$, we next describe suitable ways to handle the additional smoothing parameter~$\hatt$.
 
 \subsection{Joint Optimization} \label{sec:jointOptimization}
-As presented in \secref{sec:gnc}, decreasing the smoothing parameter~$\widehat{t}$ results in peakier and more non-convex energies.
-Thus, there are pronounced local minima at~$\tminh$ and $\frac{\partial}{\partial\widehat{t}}R_L$ is likely to point toward~$\tminh$.
-Consequently, it is reasonable to minimize the joint energy also w.r.t. the smoothing parameter~$\widehat{t}$.
+
+As presented in \secref{sec:gnc}, decreasing the smoothing parameter~$\hatt$ results in peakier and more non-convex energies.
+Thus, there are pronounced local minima at~$\tminh$ and $\frac{\partial}{\partial\hatt}R_L$ is likely to point toward~$\tminh$.
+Consequently, it is reasonable to minimize the joint energy also w.r.t. the smoothing parameter~$\hatt$.
 Thus, we seek to solve the optimization problem
 \begin{align} \label{eq:jointEnergy}
-\min_{\vx\in\X,\ \widehat{t}\in[\tminh,\tmaxh]} \left\{E(\vx,\widehat{t})\coloneqq R_L(\vx,\widehat{t}) + D(\vz,\vx)\right\}
+\min_{\vx\in\X,\ \hatt\in[\tminh,\tmaxh]} \left\{E(\vx,\hatt)\coloneqq R_L(\vx,\hatt) + D(\vz,\vx)\right\}.
 \end{align}
-using an alternating proximal gradient scheme~\citep{BoSa14} and Lipschitz backtracking of~\citet{BeTe09}.
-The algorithm is summarized in~\algref{alg:jointMinimization}.
-
+A streight forward approach, requiring little knowledge of the objective, is adapting an alternating proximal gradient scheme~\citep{BoSa14} along with Lipschitz backtracking of~\citet{BeTe09}.
+However, we instead exploit the fact that~$\nabla_\vx R_L(\cdot,\hatt)$ is approximatelly $\exp(-\hatt)$-Lipschitz and propose the preconditioned proximal gradient algorithm listed in \Algref{alg:jointMinimization}.
+Note that the projected gradient step w.r.t.~$\hatt$ is preconditioned by~$d^{-1}$ to account for the number of summands of~\eqref{eq:RL}.
 \begin{algorithm}[t]
-\caption{Proximal alternating linearization method (PALM) with Lipschitz backtracking.}\label{alg:jointMinimization}
-\textbf{Step 0:} Take $L_\vx^0,L_\hatt^0>0$, some~$\gamma_1,\gamma_2\in(0,1)$ and~$\vx^0\in\X$, $\hatt_0\in[\tminh,\tmaxh]$\\
-\textbf{Step i:} $(i\geq 0)$ 
-\begin{enumerate}
-\item
-Determine the smallest integer~$k_i$ such that 
+\caption{Preconditioned proximal gradient for joint optimization}\label{alg:jointMinimization}
+\textbf{Step 0:} Take $\vx^0\in\X\subset\R^d$, and sufficiently large $\hatt_0\in[\tminh,\tmaxh]$.
+Choose~$\eta>0$\\
+\textbf{Step i:} $(i\geq 0)$ iterate
 \begin{align*}
-R_L(\vx,\hatt_i) \leq &R_L(\vx_i,\hatt_i) + \scal{\nabla_\vx R_L(\vx_i,\hatt_i))}{\vx-\vx_i} \\
-&+ \tfrac{1}{2\eta}\norm{\vx-\vx_i}_2^2
+\vx_{i+1} &= \prox_{\eta e^{\hatt_i} D(\vz,\cdot)}(\vx_i-\eta e^{\hatt_i}\nabla_\vx R_L(\vx_i,\hatt_i))\\
+\hatt_{i+1} &= \proj_{[\tminh,\tmaxh]}\left(\hatt_i-\frac{\eta}{d}\nabla_\hatt R_L(\vx_i,\hatt_i)\right)
 \end{align*}
-with $\vx = \prox_{\eta D(\vz,\cdot)}(\vx_i-\eta\nabla_\vx R_L(\vx_i,\hatt_i))$ using $\eta=\tfrac{\gamma^{k_i}}{L_\vx^i}$.
-\item
-Set $\vx_{i+1}=\vx$ and $L_\vx^{i+1}=\max\left(\tfrac{\gamma_2}{\eta},1\right)$
-\item
-Determine the smallest integer~$l_i$ such that 
-\begin{align*}
-R_L(\vx_{i+1},\hatt) \leq &R_L(\vx_{i+1},\hatt_i) + \tfrac{\partial}{\partial\hatt} R_L(\vx_{i+1},\hatt_i)(\hatt-\hatt_i) \\
-&+ \tfrac{1}{2\eta}(\hatt-\hatt_i)^2
-\end{align*}
-with $\hatt = \proj_{[\tminh,\tmaxh]}(\hatt_i-\eta\tfrac{\partial}{\partial\hatt}R_L(\vx_{i+1},\hatt_i))$ using $\eta=\tfrac{\gamma^{l_i}}{L_\hatt^i}$.
-\item
-Set $\hatt_{i+1}=\hatt$ and $L_\hatt^{i+1}=\max\left(\tfrac{\gamma_2}{\eta},1\right)$
-\end{enumerate}
+% Approximately minimize current energy~$F(\cdot,t_i)$ using single step
+% \begin{enumerate}
+% \item
+% Determine the smallest integer~$k_i$ such that 
+% \begin{align*}
+% R_L(\vx,\hatt_i) \leq &R_L(\vx_i,\hatt_i) + \scal{\nabla_\vx R_L(\vx_i,\hatt_i))}{\vx-\vx_i} \\
+% &+ \tfrac{1}{2\eta}\norm{\vx-\vx_i}_2^2
+% \end{align*}
+% with $\vx = \prox_{\eta D(\vz,\cdot)}(\vx_i-\eta\nabla_\vx R_L(\vx_i,\hatt_i))$ using $\eta=\tfrac{\gamma^{k_i}}{L_\vx^i}$.
+% \item
+% Set $\vx_{i+1}=\vx$ and $L_\vx^{i+1}=\max\left(\tfrac{\gamma_2}{\eta},1\right)$
+% \item
+% Determine the smallest integer~$l_i$ such that 
+% \begin{align*}
+% R_L(\vx_{i+1},\hatt) \leq &R_L(\vx_{i+1},\hatt_i) + \tfrac{\partial}{\partial\hatt} R_L(\vx_{i+1},\hatt_i)(\hatt-\hatt_i) \\
+% &+ \tfrac{1}{2\eta}(\hatt-\hatt_i)^2
+% \end{align*}
+% with $\hatt = \proj_{[\tminh,\tmaxh]}(\hatt_i-\eta\tfrac{\partial}{\partial\hatt}R_L(\vx_{i+1},\hatt_i))$ using $\eta=\tfrac{\gamma^{l_i}}{L_\hatt^i}$.
+% \item
+% Set $\hatt_{i+1}=\hatt$ and $L_\hatt^{i+1}=\max\left(\tfrac{\gamma_2}{\eta},1\right)$
+% \end{enumerate}
 \end{algorithm}
 
 \subsection{Predefined Smoothing Schedule} \label{sec:predefinedSchedule}
-The second approach is motivated by recent DDPM models~\citep{SoEr19,HoJa20}.
-The idea is to first define a decreasing schedule for smoothing parameters~$\{\widehat{t}_i\}_{i=1}^n$ such that~$\tmaxh>\widehat{t}_1$, $\widehat{t}_i>\widehat{t}_{i+1}$ for~$i=1,\ldots,n-1$ and $\widehat{t}_n=\tminh$.
-Then, this sequence defines a family of optimization problems
-\[
-\vx_i =\argmin_{\vx\in\X} \left\{E(\widehat{t}_i)\coloneqq R_L(\vx,\widehat{t}_i)+D(\vz,\vx)\right\}
-\]
-that are sequentially minimized using the proximal gradient scheme~\citep{Be17}
+The second approach is motivated by SBGMs~\citep{SoEr19,HoJa20}.
+In fact it is equivalent to the GNC flow presented in~\Algref{alg:graduatedNC}.
+However, the update step is replaced by the proximal gradient step
 \begin{align} \label{eq:fixedScheme}
-\vx_{i+1} = \prox_{\eta_iD(\vz,\cdot)}(\vx_i-\eta_i\nabla_\vx R_L(\vx_i,\widehat{t}_i)),
+\vx_{i+1} = \prox_{\eta e^{\hatt_i} D(\vz,\cdot)}(\vx_i-\eta e^{\hatt_i}\nabla_\vx R_L(\vx_i,\hatt_i))
 \end{align}
-where~$\eta_i$ is the step size at the~$i^\text{th}$ iteration.
-Note that we perform only a single proximal-gradient step on every energy~$E(\widehat{t}_i)$ since the energies smoothly change along~$\widehat{t}$ for large enough~$n$.
-For selecting the step sizes, we consider Tweedie's identity as in \secref{sec:gnc}.
-In particular, Tweedie's formula states that a gradient step on the log density of noisy images (degraded by additive Gaussian noise) scaled by the variance results in the conditional mean squared estimator.
-Using the training objective~\eqref{eq:losslog}, our priors learned to approximate the negative log-density of noisy image patches for any smoothing parameter~$\widetilde{t}$.
-Thus, we obtain an approximation of the conditional mean estimator by setting the step size to an estimate of the variance~$\eta_i=\exp(\widehat{t}_i)$.
-Note that the proximal mapping in~\eqref{eq:fixedScheme} ensures data consistency and thereby frequently reintroduces some noise into~$\vx_{i+1}$.
+to account for the additional data fidelity.
+Further, we use a fixed linear schedule from the initial~$\hatt_0$ to $\tminh$.
+
+
+% The idea is to first define a decreasing schedule for smoothing parameters~$\{\hatt_i\}_{i=1}^n$ such that~$\tmaxh>\hatt_1$, $\hatt_i>\hatt_{i+1}$ for~$i=1,\ldots,n-1$ and $\hatt_n=\tminh$.
+% Then, this sequence defines a family of optimization problems
+% \[
+% \vx_i =\argmin_{\vx\in\X} \left\{E(\hatt_i)\coloneqq R_L(\vx,\hatt_i)+D(\vz,\vx)\right\}
+% \]
+% that are sequentially minimized using the proximal gradient scheme~\citep{Be17}
+% \begin{align} \label{eq:fixedScheme}
+% \vx_{i+1} = \prox_{\eta_iD(\vz,\cdot)}(\vx_i-\eta_i\nabla_\vx R_L(\vx_i,\hatt_i)),
+% \end{align}
+% where~$\eta_i$ is the step size at the~$i^\text{th}$ iteration.
+% Note that we perform only a single proximal-gradient step on every energy~$E(\hatt_i)$ since the energies smoothly change along~$\hatt$ for large enough~$n$.
+% For selecting the step sizes, we consider Tweedie's identity as in \secref{sec:gnc}.
+% In particular, Tweedie's formula states that a gradient step on the log density of noisy images (degraded by additive Gaussian noise) scaled by the variance results in the conditional mean squared estimator.
+% Using the training objective~\eqref{eq:losslog}, our priors learned to approximate the negative log-density of noisy image patches for any smoothing parameter~$\widetilde{t}$.
+% Thus, we obtain an approximation of the conditional mean estimator by setting the step size to an estimate of the variance~$\eta_i=\exp(\hatt_i)$.
+% Note that the proximal mapping in~\eqref{eq:fixedScheme} ensures data consistency and thereby frequently reintroduces some noise into~$\vx_{i+1}$.
 
 \subsection{Task-specifig Learning of Smoothing Schedule} \label{sec:learnedVN}
-Since it is not clear how to choose the predefined smoothing scheduler~$\{\widehat{t}_i\}_{i=1}^n$, why not learn it from data for a specific task?
-To do so, we propose to ``unroll'' the optimization scheme~\eqref{eq:fixedScheme} for $n\in\N$ steps and learn all~$\{\hatt_i\}_{i=1}^n$ and~$\{\eta_i\}_{i=1}^n$ such that the final output~$\vx_n$ is close to its corresponding ground truth.
+Since it is not clear how to choose the smoothing scheduler~$\{\hatt_i\}_{i=1}^I$, why not learn it from data for a specific task?
+To do so, we propose to ``unroll'' the optimization scheme~\eqref{eq:fixedScheme} for $I\in\N$ steps and learn all~$\{\hatt_i\}_{i=1}^I$ and individual step sizes~$\{\eta_i\}_{i=1}^I$ such that the final output~$\vx_n$ is close to its corresponding ground truth.
 Since the gradient w.r.t.~$\hatt$ of all~$R_L$ are smooth due to the quartic spline interpolation, any gradient-based optimization algorithm can be used for learning.
 
-Interestingly, this observation relates the successful trainable non-linear reaction-diffusion (TNRD) models of~\citet{ChPo16} and variational networks (VNs)~\citep{KoKl17,HaKl18,EfKo20} to diffusion-based models through joint priors on the space of image patches.
-Thus, variational networks -- with temporally changing parameters across the steps -- can be interpreted as a learned proximal-gradient scheme on a gradually more non-convex energy.
+Interestingly, this observation relates the successful trainable non-linear reaction-diffusion (TNRD) models of~\citet{ChPo16} and variational networks (VNs)~\citep{KoKl17,HaKl18,EfKo20} to SBGMs.
+Thus, VNs -- with temporally changing parameters across the steps -- can be interpreted as a learned proximal-gradient scheme on a gradually more non-convex energy.
 This relation enables an unsupervised pretraining of the prior advocated in TNRDs or VNs, followed by a task-specific fine-tuning of either just the smoothing schedule or the entire model.
 
 In contrast to the two previous approaches in sections~\ref{sec:jointOptimization} and \ref{sec:predefinedSchedule}, we only need to define the number of steps~$n$ as a hyperparameter, which is typically constrained by the time budget in applications.
-Moreover, if only the smoothing schedule and the step sizes are learned, just a few paired samples are required.
+Moreover, if only the smoothing schedule and the step sizes are learned, just a few paired training samples are required for supervized learning due to the small parameter space.
 
 
 % -----------------------------------------------------------------------------------------------------
@@ -726,10 +740,10 @@ Those filters are initialized using ``Kaiming''-normal initialization.
 Neither of the convolution operators facilitates bias terms since each subsequent non-linear parametric function may adapt to its input features.
 
 Throughout the prior models, every non-linear function is implemented using weighted spline basis functions.
-In addition, each non-linearity is a function in two variables -- an input feature~$x\in\R$ and the (logarithmic) smoothing parameter~$\widehat{t}\in[\tminh,\tmaxh]$.
+In addition, each non-linearity is a function in two variables -- an input feature~$x\in\R$ and the (logarithmic) smoothing parameter~$\hatt\in[\tminh,\tmaxh]$.
 For the $i^\text{th}$ layer and the $j^\text{th}$ feature channel, the output of the corresponding activation function~$\phi_{ij}$ is computed as
 \[
-\phi_{ij}(x,\widehat{t}) = \sum_{l=1}^{N_x}\sum_{o=1}^{N_t} w_{ij}^{lo} \varphi\left(\frac{x-\mu_x^l}{\gamma_x}\right) \varphi\left(\frac{\widehat{t}-\mu_x^o}{\gamma_t}\right),
+\phi_{ij}(x,\hatt) = \sum_{l=1}^{N_x}\sum_{o=1}^{N_t} w_{ij}^{lo} \varphi\left(\frac{x-\mu_x^l}{\gamma_x}\right) \varphi\left(\frac{\hatt-\mu_x^o}{\gamma_t}\right),
 \]
 where $N_x,N_t\in\N$ define the number of basis functions and the weights~$w_{ij}^{lo}\in\R$ are learned during optimization.
 For all functions, we place the means~$\mu_x^l$ on an equidistant grid on~$[-3.5,3.5]$ and set~$\gamma_x=\frac{7}{N_x-1}$.
@@ -749,8 +763,8 @@ However, the spline-based activation functions are much more expressive and seve
 The non-linear functions of the intermediate layers~$\phi_i,\ i=1,\ldots,L-1$ are initialized to the identity function, while the last non-linear function~$\phi_L$ is initialized to the quadratic function.
 
 As a source of natural image patches, we consider the BSDS500 dataset~\cite{MaFo01} and randomly extract~$96\times 96$ image patches to define the empirical distribution~$\dist{X}$.
-In the implementation, we sample the smoothing parameter from a uniform distribution, i.e., $\widehat{t}\sim\mathcal{U}(\tminh,\tmaxh)$.
-To minimize the training loss~\eqref{eq:losslog}, the AdaBelief~\citep{ZhTa20} optimizer is used for $100\ 000$ iterations using a mini-batch size of~$128$ along with an initial learning rate of $10^{-3}$.
+In the implementation, we sample the smoothing parameter from a uniform distribution, i.e., $\hatt\sim\mathcal{U}(\tminh,\tmaxh)$.
+To minimize the training loss~\eqref{eq:losslog} with the scaling factor~$m_t=\frac{1}{d}$, the AdaBelief~\citep{ZhTa20} optimizer is used for $100\ 000$ iterations using a mini-batch size of~$128$ along with an initial learning rate of $10^{-3}$.
 The learning rate is annealed to~$5\cdot 10^{-5}$ using a cosine scheme.
 We utilize the AdaBelief optimizer since it performs preconditioning based on local curvature information.
 Thus, it is well suited to learn parameters that lie in different intervals.
