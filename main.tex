@@ -261,7 +261,7 @@ In addition, we consider smoothing parameters~$t\in\T=[\tmin,\tmax]$, where $0<\
 In this setting, we show that score-based generative models~\citep{SoEr19,HoJa20} actually learn a graduated non-convexity (GNC) scheme~\citep{BlZi87}.
 In detail,  score-based generative models train a neural network to approximate the conditional score, i.e., the gradient of the log density of the data degraded by additive Gaussian noise with variance~$t$.
 The conditioning is either directly on the noise level or a diffusion time encoding the noise level.
-The key observation is that although the data becomes noisier with increasing~$t$, the corresponding smooth probability density~$\pdf{\rvx\vert\rt}$ gets smoother and its associated energy~$F(\vx,t)=-\log\pdf{\rvx\vert\rt}(\vx,t)$ gets more \emph{convex}, see the top plot in Figure~\ref{fig:gmmOptimization}.
+The key observation is that although the data becomes noisier with increasing~$t$, the corresponding smooth probability density~$\pdf{\rvx\vert\rt}$ gets smoother and its associated energy~$F(\vx,t)=-\log\pdf{\rvx\vert\rt}(\vx,t)$ gets more \emph{convex}, see the left plot in Figure~\ref{fig:gmmOptimization}.
 Next, we prove that in our setting there indeed exists a lower bound on the variance~$\widetilde{t}$ such that the energy of the conditional density is convex for~$t\geq\widetilde{t}$.
 
 Let $G(\bm{\mu},\Sigma)$ denote a multivariate Gaussian probability density with mean~$\bm{\mu}\in\R^d$ and symmetric positive definite covariance matrix~$\Sigma\in\R^{d\times d}$, which reads as
@@ -324,7 +324,7 @@ Then, we estimate the minimum by a single gradient step using the variance~$t_i$
 % Due to smoothness and convexity, we know that the conditional minimal MSE estimator~$\vx^1$ computed by Tweedie's identity~\citep{Ro56,Ef11} is close to the mode of~$F(\vx,t_0)$.
 Then this estimator is gradually refined by reducing the smoothing~$t_{i-1}<t_i$ and updating the MMSE estimator conditioned on the previous result.
 
-\begin{algorithm}[t]
+\begin{algorithm}
 \caption{Graduated non-convexity flow for minimizing a smoothed family of energies~$F(\vx,t)$}\label{alg:graduatedNC}
 \textbf{Step 0:} Take~$I\in\N$, choose sequence $\{t_i\}_{i=0}^I\subset[\tmin,\tmax]$ s.t.~$t_{i}>t_{i+1}$ and~$F(\vx,t_0)$ convex, $\vx_0\in\X$, $\eta>0$ \\
 \textbf{Step i:} $(0\leq i< I)$ 
@@ -334,17 +334,17 @@ Approximately minimize current energy~$F(\cdot,t_i)$ using single step
 \] 
 \end{algorithm}
 
-\begin{figure}[th]
+\begin{figure*}[th]
 \centering
-\includegraphics[width=.7\linewidth]{./figures/ex_gmm/ex_gmm_func}\\[1em]
-\includegraphics[width=.85\linewidth]{./figures/ex_gmm/ex_gmm_rate}
+\includegraphics[width=.35\linewidth]{./figures/ex_gmm/ex_gmm_func}
+\includegraphics[width=.6\linewidth]{./figures/ex_gmm/ex_gmm_rate}
 \label{fig:gmmOptimization}
-\caption{Top: Illustration of the 1D example energy~\eqref{eq:gmmEx} using gray lines for different~$t\in[10^{-4},1]$.
+\caption{Left: Illustration of the 1D example energy~\eqref{eq:gmmEx} using gray lines for different~$t\in[10^{-4},1]$.
 Center: Visualization of the rate of trajectories attaining the global minimum at~$x=\frac{1}{2}$ using~$N=1\ 000$ equally spaced initial points for different~$t_0$ and~$I$.
 The larger the initial smoothing~$t_0$, the fewer steps are required to obtain the perfect rate.
-Bottom: If the smallest second derivative of~$F$ w.r.t.~$x$ is positive anywhere for~$t_0$ if $F$ it is convex.
+Right: If the smallest second derivative of~$F$ w.r.t.~$x$ is positive anywhere for~$t_0$ if $F$ it is convex.
 }
-\end{figure}
+\end{figure*}
 Next we consider a simple 1D example to illustrate the effectiveness of the GNC flow.
 In particular, we use the smoothed GMM corresponding to the energy
 \begin{align} \label{eq:gmmEx}
@@ -353,14 +353,14 @@ F(x,t)=-\log\left(\sum_{i=1}^5 w_i G\left(\mu_i,\sigma_i^2+t\right)(x)\right)
 consisting of five components over the domain $x\in[-3,3]$ and $t\in[10^{-4},1]$.
 The detailed parameters are~$\bm{w}=\tfrac{1}{100}(5\ 15\ 15\ 60\ 5)$, $\bm{\mu}=(-1\ -\tfrac12\ 0\ \tfrac12\ 1)$, and $\bm{\sigma}^2=\tfrac{1}{100}(10\ 1\ 5\ 1\ 10)$.
 Note that the addition of $t$ at the variances in~\eqref{eq:gmmEx} originates from the convolution of the data density with a Gaussian as considered in Theorem~\ref{thm:Fconvex}.
-This energy is illustrated by the black lines at the top in~\figref{fig:gmmOptimization} for various~$t$.
+This energy is illustrated by the black lines at the left in~\figref{fig:gmmOptimization} for various~$t$.
 As can be seen, increasing the smoothing parameter~$t$ results in smoother and more convex energies.
 
 The plot in the center of \figref{fig:gmmOptimization} visualizes the rate of trajectories converging to the global minimum at~$x=\tfrac12$ as a function of the initial smoothing~$t_0$ and the number of steps~$I$.
 For each~$t_0$ all trajectories start from~$N=1\ 000$ equally spaced initial positions~$x^0$ on $[-3,3]$ and are defined by performing $I$~GNC flow steps using a logarithmic smoothing schedule.
 By comparing the different contour lines we observe that for larger initial smoothing fewer steps are required such that all trajectories converge to the global minimum.
 This highlights the effectiveness of the GNC.
-Finally, the bottom plot in \figref{fig:gmmOptimization} depicts the smallest~$\frac{\partial^2}{\partial x^2}F(x,t_0)$ and thereby highlights convexity of~$F$ as a function of~$t_0$.
+Finally, the right plot in \figref{fig:gmmOptimization} depicts the smallest~$\frac{\partial^2}{\partial x^2}F(x,t_0)$ and thereby highlights convexity of~$F$ as a function of~$t_0$.
 
 % -----------------------------------------------------------------------------------------------------
 \section{Learning Gradually Non-convex Image Priors}
@@ -507,10 +507,11 @@ Thus, we seek to solve the optimization problem
 \begin{align} \label{eq:jointEnergy}
 \min_{\vx\in\X,\ \hatt\in[\tminh,\tmaxh]} \left\{E(\vx,\hatt)\coloneqq R_L(\vx,\hatt) + D(\vz,\vx)\right\}.
 \end{align}
-A streight forward approach, requiring little knowledge of the objective, is adapting an alternating proximal gradient scheme~\citep{BoSa14} along with Lipschitz backtracking of~\citet{BeTe09}.
-However, we instead exploit the fact that~$\nabla_\vx R_L(\cdot,\hatt)$ is approximatelly $\exp(-\hatt)$-Lipschitz and propose the preconditioned proximal gradient algorithm listed in \Algref{alg:jointMinimization}.
+A straightforward approach, requiring little knowledge of the objective, is adapting an alternating proximal gradient scheme~\citep{BoSa14}.
+Further, even a Lipschitz backtracking~\citep{BeTe09} could be used because the energy can be easily evaluated.
+However, we instead exploit the fact that~$\nabla_\vx R_L(\cdot,\hatt)$ is approximate $\exp(-\hatt)$-Lipschitz and propose the preconditioned proximal gradient algorithm listed in \Algref{alg:jointMinimization}.
 Note that the projected gradient step w.r.t.~$\hatt$ is preconditioned by~$d^{-1}$ to account for the number of summands of~\eqref{eq:RL}.
-\begin{algorithm}[t]
+\begin{algorithm}
 \caption{Preconditioned proximal gradient for joint optimization}\label{alg:jointMinimization}
 \textbf{Step 0:} Take $\vx^0\in\X\subset\R^d$, and sufficiently large $\hatt_0\in[\tminh,\tmaxh]$.
 Choose~$\eta>0$\\
@@ -544,7 +545,7 @@ Choose~$\eta>0$\\
 
 \subsection{Predefined Smoothing Schedule} \label{sec:predefinedSchedule}
 The second approach is motivated by SBGMs~\citep{SoEr19,HoJa20}.
-In fact it is equivalent to the GNC flow presented in~\Algref{alg:graduatedNC}.
+It is equivalent to the GNC flow presented in~\Algref{alg:graduatedNC}.
 However, the update step is replaced by the proximal gradient step
 \begin{align} \label{eq:fixedScheme}
 \vx_{i+1} = \prox_{\eta e^{\hatt_i} D(\vz,\cdot)}(\vx_i-\eta e^{\hatt_i}\nabla_\vx R_L(\vx_i,\hatt_i))
@@ -570,35 +571,28 @@ Further, we use a fixed linear schedule from the initial~$\hatt_0$ to $\tminh$.
 % Thus, we obtain an approximation of the conditional mean estimator by setting the step size to an estimate of the variance~$\eta_i=\exp(\hatt_i)$.
 % Note that the proximal mapping in~\eqref{eq:fixedScheme} ensures data consistency and thereby frequently reintroduces some noise into~$\vx_{i+1}$.
 
-\subsection{Task-specifig Learning of Smoothing Schedule} \label{sec:learnedVN}
+\subsection{Task-specific Learning of Smoothing Schedule} \label{sec:learnedVN}
 Since it is not clear how to choose the smoothing scheduler~$\{\hatt_i\}_{i=1}^I$, why not learn it from data for a specific task?
-To do so, we propose to ``unroll'' the optimization scheme~\eqref{eq:fixedScheme} for $I\in\N$ steps and learn all~$\{\hatt_i\}_{i=1}^I$ and individual step sizes~$\{\eta_i\}_{i=1}^I$ such that the final output~$\vx_n$ is close to its corresponding ground truth.
-Since the gradient w.r.t.~$\hatt$ of all~$R_L$ are smooth due to the quartic spline interpolation, any gradient-based optimization algorithm can be used for learning.
+To do so, we propose to ``unroll'' the optimization scheme~\eqref{eq:fixedScheme} for $I\in\N$ steps and learn all~$\{\hatt_i\}_{i=1}^I$ and individual step sizes~$\{\eta_i\}_{i=1}^I$ such that the final output~$\vx_I$ is close to its corresponding ground truth, i.e.,
+\[
+\min_{\{\hatt_i\}_{i=1}^I\subset[\tminh,\tmaxh],\{\eta_i\}_{i=1}^I\subset\R_+} \E_{\widehat{\vx},\vz\sim\dist{\rvx,\rvz}} \left\{\norm{\vx_I-\widehat{\vx}}_2^2\right\}
+\]
+subject to
+\[
+\vx_{i+1} = \prox_{\eta_i D(\vz,\cdot)}(\vx_i-\eta_i \nabla_\vx R_L(\vx_i,\hatt_i))
+\]
+for~$i=1,\ldots,I-1$ and $\vx_0=(A^\top A)^{-1}A^\top\vz$. 
+Since the gradient w.r.t.~$\hatt$ of~$\nabla_\vx R_L$ is smooth due to the quartic spline interpolation, any gradient-based optimization algorithm can be used for learning.
 
 Interestingly, this observation relates the successful trainable non-linear reaction-diffusion (TNRD) models of~\citet{ChPo16} and variational networks (VNs)~\citep{KoKl17,HaKl18,EfKo20} to SBGMs.
-Thus, VNs -- with temporally changing parameters across the steps -- can be interpreted as a learned proximal-gradient scheme on a gradually more non-convex energy.
+Thus, VNs -- with temporally changing parameters across the steps -- can be interpreted as a learned proximal-gradient scheme on gradually more non-convex energies.
 This relation enables an unsupervised pretraining of the prior advocated in TNRDs or VNs, followed by a task-specific fine-tuning of either just the smoothing schedule or the entire model.
 
-In contrast to the two previous approaches in sections~\ref{sec:jointOptimization} and \ref{sec:predefinedSchedule}, we only need to define the number of steps~$n$ as a hyperparameter, which is typically constrained by the time budget in applications.
-Moreover, if only the smoothing schedule and the step sizes are learned, just a few paired training samples are required for supervized learning due to the small parameter space.
+In contrast to the two previous approaches, here the only hyperparameter is the number of steps~$n$, which is typically constrained by the time budget in applications.
+Moreover, if only the smoothing schedule and the step sizes are learned, just a few paired training samples are required for supervised learning due to the small parameter space.
 
-
-% -----------------------------------------------------------------------------------------------------
-\section{Experimental Results}
-In this section, we first analyze the learned regularizers on the space of images.
-Then, we compare their performance on two simple imaging tasks -- image denoising and inpainting -- using the three different methods introduced in \secrefs{sec:jointOptimization}{sec:predefinedSchedule}{sec:learnedVN}.
-
-% \begin{figure}[t]
-% \includegraphics[width=\linewidth]{./figures/results/plots_denoise_inpaint}
-% \label{fig:plotsDenoiseInpaint}
-% \caption{Comparison of the different smoothing parameter schedules for image denoising (left column) and image inpainting (right column).
-% The rows depict from top to bottom the energy, PSNR score, and the corresponding smoothing schedule.
-% The different regularizers~$R_L$ are identified by the linestyle, whereas the smoothing parameter schedule is identified by color.
-% }
-% \end{figure}
-
-
-\begin{figure*}[p]
+\begin{figure*}[th!]
+\centering
 \begin{tikzpicture}[every node/.append style={inner sep=1mm}, label/.style={draw=black,fill=white, inner sep=.5ex,rounded corners=1ex}]
 
 \node[anchor=south] (r1) at (0,0) {\includegraphics[width=.96\linewidth]{./figures/results/params_foe}};
@@ -610,18 +604,61 @@ Then, we compare their performance on two simple imaging tasks -- image denoisin
 \node[anchor=north] (r3) at (0,-6.75) {\includegraphics[width=.96\linewidth]{./figures/results/params_foedeep3}};
 \draw[black, very thick, rounded corners] (r3.north east) -- (r3.north west) -- (r3.south west) -- (r3.south east) node[midway,label,yshift=-1.25mm] {$R_3$};
 \end{tikzpicture}
-\label{fig:paramsRegs}
 \caption{
-Visualization of the learned parameters of the proposed regularizers~$R_L$ for $L\in\{1,2,3\}$.\
-The columns show the first $10$ features.
+Visualization of the learned parameters of~$R_L$ for $L\in\{1,2,3\}$.
+The columns show the first ten parameter sets of each layer.
+The gray-scale images depict the convolution kernels of each input channel, while the plots below illustrate the corresponding activation functions and warmer colors indicate larger~$\hatt\in[\tminh,\tmaxh]$.
 }
+\label{fig:paramsRegs}
 \end{figure*}
 
-TODO:
-\begin{itemize}
-    \item Training on image patches
-    \item 
-\end{itemize}
+
+
+% -----------------------------------------------------------------------------------------------------
+\section{Experimental Results}
+In this section, we first visually analyze the learned regularizers.
+Then, we compare their performance on two simple imaging tasks -- image denoising and inpainting -- using the three different methods introduced in \secrefs{sec:jointOptimization}{sec:predefinedSchedule}{sec:learnedVN}.
+
+\subsection{Analyzing the Learned Priors}
+Since the extended FoE priors are rather simple, a visual inspection of the parameters is still feasible.
+\Figref{fig:paramsRegs} illustrates a subset of the parameters of~$R_1,R_2$ and $R_3$, where the gray-scale images show the learned convolution kernels and the plots below the corresponding 2D activation functions.
+The blue and red colors correspond to~$\tminh$ and $\tmaxh$, respectively.
+The layers of the regularizers increase from top to bottom.
+The activation functions of the output layers (bottom at each box) nicely illustrate the GNC effect and the red functions ($\tmaxh$) become more quadratic.
+Comparing the output activation functions at~$\tminh$, we observe that with an increasing number of layers~$L$, they become simpler.
+This probably originates from the fact that the complexity is distributed over multiple layers for~$L>2$.
+Moreover, we see the GNC effect also for~$R_2$ and $R_3$ since the activation functions of the hidden layer become linear toward~$\tmaxh$.
+
+\subsection{Comparison of Inverse Problem Solution Techniques}
+In both figures we see a modeling optimization trade-off as described in~\cite{EfKo20} that also translates to the VNs with variable parameters.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[every node/.append style={inner sep=1mm}, label/.style={draw=black,fill=white, inner sep=.5ex,rounded corners=.25ex}]
+\node[anchor=center] (x) at (0,0) {\includegraphics[width=.9\linewidth]{figures/results/foe_steps}};
+% \draw[black]
+\draw[black, very thick] (0,0+.1) -| (x.north west) -- node[midway,label,yshift=-.75mm] {Denoising} (x.north east) |- cycle;
+
+\draw[black, very thick] (x.south west) -- node[midway,label,yshift=.75mm] {Inpainting} (x.south east) |- (0,.08) -| cycle;
+\end{tikzpicture}
+\caption{
+Visualization of the average global minimum attainment rate and the PSNR over the BSDS68 test set for the GNC flow (left, \eqref{eq:fixedScheme}) and the proposed joint optimization (right, \Algref{alg:jointMinimization}) for image denoising (top) and inpainting (bottom).
+In both tasks, the considered algorithms perform similarly.
+For sufficiently large initial smoothing~$t_0$ and number of steps~$I$, both algorithms yield the perfect attainment rate.
+However, the PSNR score is maximized by stopping early due to an optimization and modeling trade-off.
+}
+\label{fig:algComparison}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=.9\linewidth]{figures/results/plots_denoise}
+\caption{
+Comparison of the considered solution techniques for image denoising using~$I=30$ steps for the three priors~$R_L$, $L\in\{1,2,3\}$.
+The left plot depicts the average energy for each step of the BSDS68 dataset, while on the right the corresponding PSNR scores are visualized.
+}
+\label{fig:allThreeComparison}
+\end{figure}
 
 % -----------------------------------------------------------------------------------------------------
 \section{Conclusion}
