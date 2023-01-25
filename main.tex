@@ -496,6 +496,18 @@ which is also known as the variational approach.
 Here, the negative log-prior is equivalent to the regularizer~$R\colon\X\to\R$ and the negative log-likelihood equals the data fidelity term~$D\colon\Z\times\X\to\R$.
 The data fidelity models the forward problem and ensures consistency to the observations, whereas, the regularizer incorporates prior knowledge of the solution.
 Throughout this section, we assume that the data fidelity term has a simple proximal mapping, which is the case for many inverse problems in imaging.
+In the case of image denoising with additive Gaussian noise of variance~$\sigma^2$, the data fidelity and the corresponding proximal map read as
+\[
+D(\vz,\vx)=\tfrac{1}{2\sigma^2}\norm{\vx-\vz}_2^2,\ \prox_{\tau D}(\vx)= \frac{\vx+\tfrac{\tau}{\sigma^2}\vz}{1+\tfrac{\tau}{\sigma^2}}    
+\]
+and for image inpainting we have
+\[
+D(\vz,\vx)=\delta(A\vx-\vz),\ \prox_{\tau D}(\vx)_i=\begin{cases}
+x_i &\text{if } A_{ii} = 1\\
+z_i &\text{else}
+\end{cases},
+\]
+where~$\delta$ is the indicator function of the null 
 To utilize the statistical knowledge of our learned prior~$R_L$, we next describe suitable ways to handle the additional smoothing parameter~$\hatt$.
 
 \subsection{Joint Optimization} \label{sec:jointOptimization}
@@ -581,7 +593,7 @@ subject to
 \[
 \vx_{i+1} = \prox_{\eta_i D(\vz,\cdot)}(\vx_i-\eta_i \nabla_\vx R_L(\vx_i,\hatt_i))
 \]
-for~$i=1,\ldots,I-1$ and $\vx_0=(A^\top A)^{-1}A^\top\vz$. 
+for~$i=1,\ldots,I-1$ and $\vx_0=\vz$. 
 Since the gradient w.r.t.~$\hatt$ of~$\nabla_\vx R_L$ is smooth due to the quartic spline interpolation, any gradient-based optimization algorithm can be used for learning.
 
 Interestingly, this observation relates the successful trainable non-linear reaction-diffusion (TNRD) models of~\citet{ChPo16} and variational networks (VNs)~\citep{KoKl17,HaKl18,EfKo20} to SBGMs.
@@ -596,13 +608,13 @@ Moreover, if only the smoothing schedule and the step sizes are learned, just a 
 \begin{tikzpicture}[every node/.append style={inner sep=1mm}, label/.style={draw=black,fill=white, inner sep=.5ex,rounded corners=1ex}]
 
 \node[anchor=south] (r1) at (0,0) {\includegraphics[width=.96\linewidth]{./figures/results/params_foe}};
-\draw[black, very thick, rounded corners] (r1.north east) -- (r1.north west) -- (r1.south west) -- (r1.south east) node[midway,label,yshift=-1.25mm] {$R_1$};
+\draw[black, very thick, rounded corners] (r1.north east) -- node[midway,label,yshift=-1.25mm] {$R_1$} (r1.north west) -- (r1.south west) -- (r1.south east);
 
-\node[anchor=south] (r2) at (0,-6.25) {\includegraphics[width=.96\linewidth]{./figures/results/params_foedeep}};
-\draw[black, very thick, rounded corners] (r2.north east) -- (r2.north west) -- (r2.south west) -- (r2.south east) node[midway,label,yshift=-1.25mm] {$R_2$};
+\node[anchor=south] (r2) at (0,-6) {\includegraphics[width=.96\linewidth]{./figures/results/params_foedeep}};
+\draw[black, very thick, rounded corners] (r2.north east) -- node[midway,label,yshift=-1.25mm] {$R_2$} (r2.north west) -- (r2.south west) -- (r2.south east);
 
-\node[anchor=north] (r3) at (0,-6.75) {\includegraphics[width=.96\linewidth]{./figures/results/params_foedeep3}};
-\draw[black, very thick, rounded corners] (r3.north east) -- (r3.north west) -- (r3.south west) -- (r3.south east) node[midway,label,yshift=-1.25mm] {$R_3$};
+\node[anchor=north] (r3) at (0,-6.25) {\includegraphics[width=.96\linewidth]{./figures/results/params_foedeep3}};
+\draw[black, very thick, rounded corners] (r3.north east) -- node[midway,label,yshift=-1.25mm] {$R_3$} (r3.north west) -- (r3.south west) -- (r3.south east);
 \end{tikzpicture}
 \caption{
 Visualization of the learned parameters of~$R_L$ for $L\in\{1,2,3\}$.
@@ -619,19 +631,32 @@ The gray-scale images depict the convolution kernels of each input channel, whil
 In this section, we first visually analyze the learned regularizers.
 Then, we compare their performance on two simple imaging tasks -- image denoising and inpainting -- using the three different methods introduced in \secrefs{sec:jointOptimization}{sec:predefinedSchedule}{sec:learnedVN}.
 
-\subsection{Analyzing the Learned Priors}
+\subsection{Visual Analysis of Learned Priors}
 Since the extended FoE priors are rather simple, a visual inspection of the parameters is still feasible.
 \Figref{fig:paramsRegs} illustrates a subset of the parameters of~$R_1,R_2$ and $R_3$, where the gray-scale images show the learned convolution kernels and the plots below the corresponding 2D activation functions.
 The blue and red colors correspond to~$\tminh$ and $\tmaxh$, respectively.
-The layers of the regularizers increase from top to bottom.
-The activation functions of the output layers (bottom at each box) nicely illustrate the GNC effect and the red functions ($\tmaxh$) become more quadratic.
-Comparing the output activation functions at~$\tminh$, we observe that with an increasing number of layers~$L$, they become simpler.
+We use the effective range of the data defined by the $.01$ and $.99$-quantiles to show the effective domain of every activation function for various~$\hatt$.
+This domain increases along $\hatt$ due to the variance exploding setup.
+The layers of the individual regularizers are visualized from top to bottom.
+
+The activation functions of the output layers (bottom of each box) nicely illustrate the GNC effect and the red functions ($\tmaxh$) become more quadratic.
+Comparing the output activation functions of the different priors at~$\tminh$ (blue lines), we observe that with an increasing number of layers~$L$, they become simpler in the sense that the number of local minima gets smaller and the support regions of each minimum are increased.
 This probably originates from the fact that the complexity is distributed over multiple layers for~$L>2$.
-Moreover, we see the GNC effect also for~$R_2$ and $R_3$ since the activation functions of the hidden layer become linear toward~$\tmaxh$.
+Moreover, we see the GNC effect also for~$R_2$ and $R_3$ not only since the output activations become quadratic toward~$\tmaxh$ but also because the activation functions of the hidden layers get linear.
 
 \subsection{Comparison of Inverse Problem Solution Techniques}
-In both figures we see a modeling optimization trade-off as described in~\cite{EfKo20} that also translates to the VNs with variable parameters.
+Next, we compare the different inference techniques for solving inverse problems using the learned~$R_L$.
+In \figref{fig:algComparison}, the behavior of the GNC flow~(\Secref{sec:predefinedSchedule}) and the joint optimization~(\Secref{sec:jointOptimization}) is compared for image denoising (top, $\sigma=0.1$) and inpainting (bottom, random missing rate~$80\%$).
+In analogy to the 1D introductory example, the attainment rate of the global minimal energy is presented in the top row of each block to show the effectiveness of the GNC principle.
+In detail, it is the average across the BSDS68~\cite{MaFo01} test set for a broad range of initial smoothing~$t_0$ and number of steps~$I$.
+Comparing both algorithms, we observe only minor differences and the optimal attainment rate is obtained for sufficiently large initial smoothing~$t_0$ and number of steps~$I$.
 
+In contrast, the average PSNR scores w.r.t.~the ground truth (second row in every box) behave differently.
+In particular for image denoising, the maximum PSNR score is obtained before the global minimum energy is attained, as can be seen by comparing the plots in the first and second rows.
+This originates from a modeling and optimization trade-off described by~\citet{EfKo20}, where similar models have been learned in a discriminative way.
+Interestingly, this effect also arises in our generatively trained models.
+The effect is not as pronounced for image inpainting since the problem is harder because the initial image~$\vx_0=\vz$ has many missing pixels set to $0$.
+Thus, the initial smoothing~$\hatt_0$ and the number of steps~$I$ need to be properly selected to maximize the PSNR score.
 \begin{figure}[h!]
 \centering
 \begin{tikzpicture}[every node/.append style={inner sep=1mm}, label/.style={draw=black,fill=white, inner sep=.5ex,rounded corners=.25ex}]
@@ -650,6 +675,11 @@ However, the PSNR score is maximized by stopping early due to an optimization an
 \label{fig:algComparison}
 \end{figure}
 
+As outlined in \Secref{sec:learnedVN}, a suitable way of determining the hyperparameters of a GNC flow is by learning them from data for a specific task.
+Here, only the number of steps~$I$ is fixed a priori and the corresponding step sizes and smoothing schedule are learned to maximize performance in analogy to VNs.
+\Figref{fig:allThreeComparison} illustrates the energy and PSNR curves of all three schemes for an image denoising problem ($\sigma=0.1$).
+While GNC flow and the joint optimization almost attain the global minimum after $30$ steps, the learned VN does not.
+However, in terms of PSNR score, the learned VN outperforms the other approaches and reaches the maximum exactly at~$30$ steps and requires only training of~$2I=60$ parameters.
 \begin{figure}
 \centering
 \includegraphics[width=.9\linewidth]{figures/results/plots_denoise}
