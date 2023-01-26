@@ -349,8 +349,15 @@ Approximately minimize current energy~$F(\cdot,t_i)$ using single step
 
 \begin{figure*}[th]
 \centering
-\includegraphics[width=.35\linewidth]{./figures/ex_gmm/ex_gmm_func}
-\includegraphics[width=.6\linewidth]{./figures/ex_gmm/ex_gmm_rate}
+\begin{tikzpicture}[every node/.append style={inner sep=1mm}]
+\node at (-8.3,0) {\includegraphics[width=.35\linewidth]{./figures/ex_gmm/ex_gmm_func}};
+\node at (0,0) {\includegraphics[width=.6\linewidth]{./figures/ex_gmm/ex_gmm_rate}};
+% \draw[black, thick] (4.7,2.6) -- (4.7,-2.4);
+\fill[red, opacity=.1] (4.7-2.05,2.6) rectangle (4.7,-2.4);
+\node[text=red, rotate=90] at (4.7-.25,0) {non-convex};
+\fill[green, opacity=.1] (4.7+.4,2.6) rectangle (4.7,-2.4);
+\node[text=green, rotate=90] at (4.7+.25,0) {convex};
+\end{tikzpicture}
 \label{fig:gmmOptimization}
 \caption{Left: Illustration of the 1D example energy~\eqref{eq:gmmEx} using gray lines for different~$t\in[10^{-4},1]$.
 Center: Visualization of the rate of trajectories attaining the global minimum at~$x=\frac{1}{2}$ using~$N=1\ 000$ equally spaced initial points for different~$t_0$ and~$I$.
@@ -377,29 +384,29 @@ Finally, the right plot in \figref{fig:gmmOptimization} depicts the smallest~$\f
 
 % -----------------------------------------------------------------------------------------------------
 \section{Learning Gradually Non-convex Image Priors}
-In this section, we transfer the insights gained from relations of GNC and score-based generative models to learn simple priors for natural images.
+In this section, we transfer the insights gained from relations of GNC and score-based generative models to learn priors for natural images.
+
 
 \subsection{FoE-like Prior Models}
 Let $\vx\in\X\subset\R^d$ be an image of size~$d=m\times n\times c$, where $m$ represents its height, $n$ its width, and $c$ is the number of feature channels.
-Without loss of generality, we consider the input domain~$\X=[a,b]^d$ for $a<b$ and $a,b\in\R$.
-A popular choice is $a=0$ and $b=1$.
-Note that this domain can be obtained by a simple preprocessing step for many imaging applications.
-The domain of the smoothing parameter is fixed to~$\T=[\tmin,\tmax]$, where~$0<\tmin<\tmax<\infty$.
-We commonly set~$\tmin=10^{-4}$ and $\tmax=1$.
-
-\subsubsection{Extending the Fields of Experts}
-\citet{RoBl09} introduced a simple and versatile prior operating on image patches called fields of experts~(FoE).
+% Without loss of generality, we consider the input domain~$\X=[a,b]^d$ for $a<b$ and $a,b\in\R$.
+% A popular choice is $a=0$ and $b=1$.
+% Note that this domain can be obtained by a simple preprocessing step for many imaging applications.
+% The domain of the smoothing parameter is fixed to~$\T=[\tmin,\tmax]$, where~$0<\tmin<\tmax<\infty$.
+% We commonly set~$\tmin=10^{-4}$ and $\tmax=1$.
+\citet{RoBl09} introduced a simple and versatile prior operating on images called fields of experts~(FoE).
 This prior has been successfully applied to various inverse problems in imaging sciences and its essential building blocks are (local) convolutions that extract lower-level features as well as non-linear potential functions.
 In particular, we consider the FoE model
 \[
 R_\mathrm{FoE}(\vx) = \scal{\vec{1}}{\left(\Phi \circ K\right)(\vx)},
 \]
 where the linear operator~$K\colon\R^d\to\R^{d_1}$ extracts~$N_1$ features using 2D convolution kernels~$k_i$ with~$d_1=m\times n\times N_1$.
-The operator~$\Phi\colon\R^{d_1}\to\R^{d_1}$ applies to every feature channel~$k_i(\vx)$ a corresponding pixel-wise parametric non-linear function~$\phi_i\colon\R\to\R$, and the scalar product denotes the sum over all pixels and channels.
-The underlying idea is that every convolution kernel~$k_i$ specializes on a certain pattern and the associated non-linearity~$\phi_i$ describes the corresponding energy, i.e., the negative logarithm of the density.
+The operator~$\Phi\colon\R^{d_1}\to\R^{d_1}$ applies to every feature channel~$k_i(\vx)$ a corresponding pixel-wise parametric non-linear potential~$\phi_i\colon\R\to\R$, and the scalar product denotes the sum over all pixels and channels.
+The underlying idea is that every convolution kernel~$k_i$ specializes on a certain pattern and the associated potential~$\phi_i$ describes the corresponding energy, i.e., the negative logarithm of the density.
 The non-linear functions~$\phi_i$ are typically learnable and implemented by simple parametric functions~\citep{RoBl09,ChRa14} or weighted radial basis functions~\citep{ChPo16,KoKl17}.
 
-We next extend the FoE prior using the conditioning concept of SBGMs.
+\subsubsection{Extending the Fields of Experts}
+Due to the simplicity of the FoE prior a natural approach to include the conditioning concept of SBGMs is by affecting the potential functions to learn conditional prior models.
 In detail, the extended FoE reads as
 \begin{align}\label{eq:r1}
 R_1(\vx,t) = \scal{\vec{1}}{\left(\Phi_1(\cdot, t) \circ K_1\right)(\vx)},
@@ -417,7 +424,7 @@ Then, an FoE-type prior facilitating $L$-layers reads as
 R_L(\vx,t) = \scal{\vec{1}}{\left(\Phi_L(\cdot,t)\circ K_L\circ\cdots\circ\Phi_1(\cdot, t) \circ K_1\right)(\vx)}.
 \end{align}
 Each convolution~$K_i\colon\R^{d_{i-1}}\to\R^{d_i}$, $i=1,\ldots,L$ performs a linear combination of all input features, thereby enabling the mixing of features as typically performed in convolutional neural networks (CNNs).
-In contrast to typical CNNs, we use parametric activation functions that adapt to the corresponding feature channels.
+In contrast to typical CNNs, we use parametric activation~$\Phi_i,\ldots,\Phi_{L-1}$ and potential~$\Phi_L$ functions that adapt to the corresponding feature channels.
 At every layer~$i\in\{1,\ldots,L\}$ and for any feature channel~$j\in\{1,\ldots,N_i\}$, we employ a 2D parametric point-wise function~$\phi_{ij}\in\C^3(\R\times\T,\R)$ to non-linearly process the features.
 This idea follows recent suggestions to facilitate spline-based parametric activation functions in deep CNNs~\citep{OcMe18,AzGu20}.
 Further details on the parametric functions are in~\cref{apdx:implementationDetails}.
@@ -644,16 +651,16 @@ In this section, we first visually analyze the learned regularizers and then com
 
 \subsection{Visual Analysis of Learned Priors}
 Since the extended FoE priors are rather simple, a visual inspection of the parameters is still feasible.
-\Figref{fig:paramsRegs} illustrates a subset of the parameters of~$R_1,R_2$ and $R_3$, where the gray-scale images show the learned convolution kernels and the plots below the corresponding 2D activation functions.
+\Figref{fig:paramsRegs} illustrates a subset of the parameters of~$R_1,R_2$, and $R_3$, where the gray-scale images show the learned convolution kernels and the plots below the corresponding 2D non-linear functions.
 The blue and red colors correspond to~$\tminh$ and $\tmaxh$, respectively.
 We use the effective range of the data defined by the $.01$ and $.99$-quantiles to show the effective domain of every activation function for various~$\hatt$.
 This domain increases along $\hatt$ due to the variance exploding setup.
 The layers of the regularizers are visualized from top to bottom.
 
-The activation functions of the output layers (bottom of each box) nicely illustrate the GNC effect and the red functions ($\tmaxh$) become more quadratic.
-Comparing the output activation functions of the different priors at~$\tminh$ (blue lines), we observe that with an increasing number of layers~$L$, they become simpler in the sense that the number of local minima gets smaller and the support regions of each minimum are increased.
+The potential functions~$\phi_L$ (bottom of each box) nicely illustrate the GNC effect and the red functions ($\tmaxh$) become more quadratic.
+Comparing the potential functions of the different priors at~$\tminh$ (blue lines), we observe that with an increasing number of layers~$L$, they become simpler in the sense that the number of local minima gets smaller and the support regions of each minimum are increased.
 This probably originates from the fact that the complexity is distributed over multiple layers for~$L>2$.
-Moreover, we see the GNC effect also for~$R_2$ and $R_3$ not only since the output activations become quadratic toward~$\tmaxh$ but also because the activation functions of the hidden layers get linear.
+Moreover, we see the GNC effect also for~$R_2$ and $R_3$ not only since the potential functions become quadratic toward~$\tmaxh$ but also because the activation functions of the hidden layers get linear.
 
 \begin{figure}[t!]
 \centering
