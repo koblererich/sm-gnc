@@ -155,16 +155,11 @@
 \printAffiliationsAndNotice{\icmlEqualContribution} % otherwise use the standard text.
 
 \begin{abstract}
-In this paper, we propose a unified view of denoising score-based models in the context of graduated non-convex energy minimization.
-We show that for sufficiently large noise variance, the associated negative log density -- the energy -- becomes convex. Consequently, denoising score-based models essentially follow the graduated non-convexity principle.
-In this framework, we learn extended Fields of Experts image priors to approximate the joint density of noisy images and variances in the negative log domain.
-These priors can be easily incorporated into existing solution techniques for inverse problems and offer great flexibility in selecting variance sequences after training.
-Our numerical experiments on image denoising and inpainting show that only a few steps are required during inference.
-%   We show applications to image reconstruction (denoising and inpainting) by adopting the popular Fields-of-Experts image prior in our framework. Our results show that our method leads to better results with a significantly smaller number of iterations. Moreover, the schedule of the diffusion parameter can be set after learning the priors, which adds great flexibility to the model.
+In this paper, we propose a unified framework of denoising score-based models in the context of graduated non-convex energy minimization.
+We show that for sufficiently large noise variance, the associated negative log density -- the energy -- becomes convex. Consequently, denoising score-based models essentially follow a graduated non-convexity heuristic.
+We apply this framework to learning generalized Fields of Experts image priors that approximate the joint density of noisy images and their associated variances.
+These priors can be easily incorporated into existing optimization algorithms for solving inverse problems and naturally implement a fast and robust graduated non-convexity mechanism.
 \end{abstract}
-
-
-
 
 % -----------------------------------------------------------------------------------------------------
 \section{Introduction}
@@ -200,7 +195,7 @@ Thus, denoising score-based generative models learn to approximate gradients of 
 increasing noise and recent inference techniques such as DDIM~\citep{SoMe22} follow the graduated non-convexity~(GNC) principle~\citep{BlZi87}, which is a widely used heuristic for avoiding local minima.
 
 Inspired by these observations, we propose a unified energy-based
-perspective of score-based models through learning a
+perspective of denoising score-based models through learning a
 one-parameter family of energies continuously parametrized by~$t$ to approximate the smoothed negative log density of the data.
 This enables easy integration of the learned prior energy into the variational approach to inverse problems by choosing sequences for~$t$, i.e., smoothing schedules.
 In particular, we compare the following options:
@@ -360,7 +355,7 @@ Approximately minimize current energy~$F(\cdot,t_i)$ using single step
 \caption{Left: Illustration of the 1D example energy~\eqref{eq:gmmEx} using gray lines for different~$t\in[10^{-4},1]$.
 Center: Visualization of the rate of trajectories attaining the global minimum at~$x=\frac{1}{2}$ using~$N=1\ 000$ equally spaced initial points for different~$t_0$ and~$I$.
 The larger the initial smoothing~$t_0$, the fewer steps are required to obtain the perfect rate.
-Right: If the smallest second derivative of~$F$ w.r.t.~$x$ is positive anywhere for~$t_0$ if $F$ it is convex.
+Right: Smallest second derivative of~$F$ w.r.t.~$x$ for different~$t_0$. TOOD: convex and non-convex.
 }
 \end{figure*}
 Next, we consider a simple 1D example to illustrate the effectiveness of the GNC flow.
@@ -663,7 +658,7 @@ Moreover, we see the GNC effect also for~$R_2$ and $R_3$ not only since the outp
 \begin{figure}[t!]
 \centering
 \begin{tikzpicture}[every node/.append style={inner sep=1mm}, label/.style={draw=black,fill=white, inner sep=.5ex,rounded corners=.25ex}]
-\node[anchor=center] (x) at (0,0) {\includegraphics[width=.85\linewidth]{figures/results/foe_steps}};
+\node[anchor=center] (x) at (0,0) {\includegraphics[width=.82\linewidth]{figures/results/foe_steps}};
 % \draw[black]
 \draw[black, very thick] (0,0+.1) -| (x.north west) -- node[midway,label,yshift=-.75mm] {Denoising} (x.north east) |- cycle;
 
@@ -709,11 +704,12 @@ However, in terms of PSNR score, the learned VN outperforms the other approaches
 
 % -----------------------------------------------------------------------------------------------------
 \section{Conclusion}
-In this work, we drew connections between diffusion-based models and the GNC principle by taking on the perspective of energies.
-We observed that adding noise with increasing variance leads to smoother and more convex energies.
-To account for this smoothing effect, we extended the FoE prior by using 2D activation functions and proposed learning the joint density of noisy images and smoothing parameters using SM.
-These priors can be easily incorporated into existing approaches for solving inverse problems such as MAP estimation.
-The continuous differentiability w.r.t.~both arguments of the proposed priors enabled an analysis of different smoothing schedule selection methods.
+In this work, we established connections between denoising score-based models and the GNC principle in optimization.
+We found that a perturbation of the data by additive Gaussian noise leads to smoother densities respectively more convex energies with increasing variance.
+We demonstrated this effect by learning a one-parameter family of FoE priors, where the smoothing parameter can be naturally incorporated into the potential functions.
+We showed that these priors indeed become convex for sufficiently large smoothing and can be easily incorporated into existing approaches for solving inverse problems such as MAP estimation.
+In future work, we will extend our work to more expressive priors and more challenging inverse problems.
+% The continuous differentiability w.r.t.~both arguments of the proposed priors enabled an analysis of different smoothing schedule selection methods.
 
 
 \bibliography{references}
