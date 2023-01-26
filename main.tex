@@ -91,12 +91,12 @@
 
 % The \icmltitle you define below is probably too long as a header.
 % Therefore, a short form for the running title is supplied here:
-\icmltitlerunning{Gradually Non-convex Score Matching Image Priors}
+\icmltitlerunning{Learning Gradually Non-convex Image Priors Using Score Matching}
 
 \begin{document}
 
 \twocolumn[
-\icmltitle{Gradually Non-convex Score Matching Image Priors}
+\icmltitle{Learning Gradually Non-convex Image Priors Using Score Matching}
 
 % It is OKAY to include author information, even for blind
 % submissions: the style file will automatically remove it for you
@@ -155,7 +155,12 @@
 \printAffiliationsAndNotice{\icmlEqualContribution} % otherwise use the standard text.
 
 \begin{abstract}
-  In this paper, we propose a unified view of denoising diffusion-based models in the context of graded non-convex energy minimization. We show that for a sufficiently large diffusion parameter, the associated negative log prior becomes a convex function. As a consequence the denoising diffusion-based image models essentially implement a learned graded non-convexity heuristic. We show applications to image reconstruction (denoising and inpainting) by adopting the popular Fields-of-Experts image prior in our framework. Our results show that our method leads to better results with a significantly smaller number of iterations. Moreover, the schedule of the diffusion parameter can be set after learning the priors, which adds great flexibility to the model.
+In this paper, we propose a unified view of denoising score-based models in the context of graduated non-convex energy minimization.
+We show that for sufficiently large noise variance, the associated negative log density -- the energy -- becomes convex. Consequently, denoising score-based models essentially follow the graduated non-convexity principle.
+In this framework, we learn extended Fields of Experts image priors to approximate the joint density of noisy images and variances in the negative log domain.
+These priors can be easily incorporated into existing solution techniques for inverse problems and offer great flexibility in selecting variance sequences after training.
+Our numerical experiments on image denoising and inpainting show that only a few steps are required during inference.
+%   We show applications to image reconstruction (denoising and inpainting) by adopting the popular Fields-of-Experts image prior in our framework. Our results show that our method leads to better results with a significantly smaller number of iterations. Moreover, the schedule of the diffusion parameter can be set after learning the priors, which adds great flexibility to the model.
 \end{abstract}
 
 
@@ -184,30 +189,28 @@ These solvers can further be used to solve inverse problems by considering a sto
 Moreover, this gradient flow perspective and its approximation by a score network lead to denoising diffusion implicit models~(DDIM)~\citep{SoMe22}, which allow for a significant speed up in sampling while maintaining image quality to a large extent.
 
 In contrast to the main body of recent works that focus on the score -- the
-gradient of the log-density, we focus in this work on the respective
-negative log-density -- the energy. We consider the problem of
+gradient of the log density, we focus in this work on the respective
+negative log density -- the energy. We consider the problem of
 learning energies of corresponding image priors on gradually noisier images, where the variance~$t$ of the noise is equal to a smoothing parameter.
 Indeed adding noise to images is equivalent to sampling images from the true image distribution \emph{smoothed} by a Gaussian with variance~$t$.
 Moreover, we show that under mild assumptions, there always exists a
 sufficiently large smoothing parameter $\widetilde{t}$ for which the
 corresponding negative log density (the energy) becomes a convex function.
-Further, denoising score-based generative models learn to approximate gradients of energies that become gradually more \emph{convex} for
-increasing noise and hence recent inference techniques~\citep{SoMe22} essentially implement a graduated non-convexity~(GNC) principle~\citep{BlZi87}, which is a widely used heuristic for avoiding local minima.
-
-%The basic idea of the GNC method is to gradually minimize a surrogate function which depends on a parameter $t\geq 0$ such that for $t \geq \tilde t$, the surrogate function becomes convex and in the limit $t \to 0$ the surrogate function is equivalent to the original function.
+Thus, denoising score-based generative models learn to approximate gradients of energies that become gradually more \emph{convex} for
+increasing noise and recent inference techniques such as DDIM~\citep{SoMe22} follow the graduated non-convexity~(GNC) principle~\citep{BlZi87}, which is a widely used heuristic for avoiding local minima.
 
 Inspired by these observations, we propose a unified energy-based
-perspective of diffusion-based models that is based on learning a
-one-parameter family of smoothed image priors, continuously parametrized by~$t$.
-This enables us to choose a smoothing schedule after learning this family.
-In particular, we compare the following options on typical inverse problems in imaging:
+perspective of score-based models through learning a
+one-parameter family of energies continuously parametrized by~$t$ to approximate the smoothed negative log density of the data.
+This enables easy integration of the learned prior energy into the variational approach to inverse problems by choosing sequences for~$t$, i.e., smoothing schedules.
+In particular, we compare the following options:
 \begin{enumerate}
   \item A joint minimization in both the image and the smoothing
     parameter.
   \item A predefined schedule such that the subsequent inference
-    becomes equivalent to the GNC principle.
-  \item A task-specific learned schedule based on unrolling a certain
-    number of inference steps.
+    becomes equivalent to GNC.
+  \item A task-specific schedule learned by unrolling a certain
+    number of proximal gradient steps.
 \end{enumerate}
 Interestingly, the last option allows drawing connections to
 variational networks~\cite{ChPo16,KoKl17}.
@@ -272,10 +275,14 @@ Later, we will also consider a discrete probability measure defined by the empir
 In addition, we consider smoothing parameters~$t\in\T=[\tmin,\tmax]$, where $0<\tmin<\tmax<\infty$.
 
 In this setting, we show that score-based generative models~\citep{SoEr19,HoJa20} actually learn a graduated non-convexity (GNC) scheme~\citep{BlZi87}.
-In detail,  score-based generative models train a neural network to approximate the conditional score, i.e., the gradient of the log density of the data degraded by additive Gaussian noise with variance~$t$.
-The conditioning is either directly on the noise level or a diffusion time encoding the noise level.
-The key observation is that although the data becomes noisier with increasing~$t$, the corresponding probability density~$\pdf{\rvx\vert\rt}$ gets smoother (in fact more Gaussian) and its associated energy~$F(\vx,t)=-\log\pdf{\rvx\vert\rt}(\vx,t)$ gets more \emph{convex} (in fact more quadratic), see the left plot in Figure~\ref{fig:gmmOptimization}.
-Next, we prove that in our setting there indeed exists a lower bound on the variance~$\widetilde{t}$ such that the energy of the conditional density is convex for~$t\geq\widetilde{t}$.
+In detail, score-based generative models train a neural network to approximate the conditional score, i.e., the gradient of the log density of the data degraded by additive Gaussian noise~$s(\vy,t)\approx\nabla_\vy\log\pdf{\rvy\vert\rt}(\vy,t)$ where $\rvy=\rvx+\sqrt{\rt}\rvn$, $\rvn\sim\mathcal{N}(0,\id)$.
+% The conditioning is either directly on the noise level or a diffusion time encoding it.
+The key observation is that although the data becomes noisier with increasing~$t$, the corresponding probability density
+\[
+\pdf{\rvy\vert\rt}(\vy\vert t)=\left(\pdf{\rvx}\ast G(\vec{0},t\id)\right)(\vy)
+\]
+gets smoother due to the convolution with a Gaussian density~$G(0,t\id)$ and its associated energy~$F(\vy,t)=-\log\pdf{\rvy\vert\rt}(\vy,t)$ gets more \emph{convex} (in fact more quadratic), see the left plot in Figure~\ref{fig:gmmOptimization}.
+Next, we prove that there indeed exists a lower bound on the variance~$\widetilde{t}$ such that the energy of the conditional density is convex for~$t\geq\widetilde{t}$.
 
 Let $G(\bm{\mu},\Sigma)$ denote a multivariate Gaussian probability density with mean~$\bm{\mu}\in\R^d$ and symmetric positive definite covariance matrix~$\Sigma\in\R^{d\times d}$, which reads as
 \[
@@ -283,17 +290,16 @@ G(\bm{\mu},\Sigma)(\vx)=\vert 2\pi\Sigma\vert^{-\frac{1}{2}}\exp\left(-\norm{\vx
 \]
 \begin{definition}[GMM]
 Let $n\in\N$.
-A Gaussian mixture model (GMM) consisting of $n$ weighted normal distributions is defined as
+A Gaussian mixture model (GMM) consisting of $n$ components is defined as
 \[
 p = \sum_{i=1}^n w_i G(\vx_i,\Sigma_i)
 \]
-with mean vectors $\{\vx_i\}_{i=1}^n\subset\R^d$ and positive semidefinite covariance matrices~$\{\Sigma_i\}_{i=1}^n\subset\R^{d\times d}$.
-All mixture weights are positive and sum up to~$1$, i.e., $(w_1\ \cdots\ w_n)^\top\in\Delta^n$.
+with means~$\{\vx_i\}_{i=1}^n\subset\R^d$, covariances~$\{\Sigma_i\}_{i=1}^n\subset\R^{d\times d}$, and weights on the unit simplex~$\vw=(w_1\ \ldots\ w_n)^\top\in\Delta^n$.
 \end{definition}
 Recall that for $n\to\infty$ a GMM can uniformly approximate any function in~$\C_0$~\citep{NgNg20}.
 Note that an approximation w.r.t.~$\L^p$ also holds for any~$p_\rvx\in\L^p$ for~$p\in[1.\infty)$.
 Consequently, our setting and most practically encountered probability density functions can be well approximated by GMMs.
-Thus, we focus in the following on probability density functions induced by a GMM.
+Thus, we focus in the following on probability density functions induced by GMMs.
 
 \begin{theorem}\label{thm:Fconvex}
 Let~$\X\subset\R^d$ and~$\diameter(\X)<\infty$. 
@@ -317,27 +323,26 @@ is considered.
 Here, $\delta_{\vx}$ denotes the Dirac delta measure located at~$\vx$.
 \end{corollary}
 The proofs can be found in~\cref{apdx:proofs}.
-Note that in this paper we only consider the variance exploding setting, however, similar results can be obtained for variance preserving schemes~\citep{SoSo20}. 
+Note that in this paper we only consider the variance exploding setting, however, similar results hold for variance preserving schemes. 
 
 The underlying idea of the GNC is to speed up the estimation of the global minimum of a non-convex energy.
 First, this energy is approximated by a one-parameter family of energies that become more convex for increasing~$t$.
 Second, an initial smoothing parameter is selected such that the energy is convex.
 Third, the initial problem is efficiently solved due to increased smoothness and convexity.
-Then, the parameter is reduced such that the energy becomes gradually more non-convex.
-The resulting energy is minimized using the previous solution as initialization and the process is repeated until convergence of the energy corresponding to the smallest parameter.
+Then, the parameter is reduced such that the energy becomes gradually more non-convex and is in turn minimized starting from the previous solution.
+The process is repeated until~$t\to0$.
 
 Comparing score-based generative models to GNC, we observe the following similarities.
 First, the score networks also approximate a one-parameter family of the gradient of associated energies.
 Second, the schedule of the smoothing parameter is frequently a priori fixed.
 Finally, as we proved above, there exists a smoothing parameter such that the associated energy becomes convex in most practical cases.
 
-To combine the best of both approaches, we propose the GNC flow described in~\Algref{alg:graduatedNC}, which is a discretization of a continuous gradient flow starting from a convex approximation.
+Combining both approaches results in the GNC flow described in~\Algref{alg:graduatedNC}, which is a discretization of a continuous gradient flow starting from a convex approximation.
 In detail, first a decreasing sequence of smoothing parameters~$\{t_i\}_{i=0}^I$ is fixed such that~$F(\vx,t_0)$ is convex.
 Then, we estimate the minimum by a single gradient step using the variance~$t_i$ as preconditioning, which is motivated by Tweedie's identity~\citep{Ro56,Ef11} and the fact that for a smooth and convex function the minimal means squared error (MMSE) estimator is close to its minimum.
-% Due to smoothness and convexity, we know that the conditional minimal MSE estimator~$\vx^1$ computed by Tweedie's identity~\citep{Ro56,Ef11} is close to the mode of~$F(\vx,t_0)$.
-Then this estimator is gradually refined by reducing the smoothing~$t_{i-1}<t_i$ and updating the MMSE estimator conditioned on the previous result.
+Then this estimator is gradually refined by reducing the smoothing~$t_i>t_{i+1}$ and updating the MMSE estimator conditioned on the previous result.
 
-\begin{algorithm}
+\begin{algorithm}[t]
 \caption{Graduated non-convexity flow for minimizing a smoothed family of energies~$F(\vx,t)$}\label{alg:graduatedNC}
 \textbf{Step 0:} Take~$I\in\N$, choose sequence $\{t_i\}_{i=0}^I\subset[\tmin,\tmax]$ s.t.~$t_{i}>t_{i+1}$ and~$F(\vx,t_0)$ convex, $\vx_0\in\X$, $\eta>0$ \\
 \textbf{Step i:} $(0\leq i< I)$ 
@@ -358,8 +363,8 @@ The larger the initial smoothing~$t_0$, the fewer steps are required to obtain t
 Right: If the smallest second derivative of~$F$ w.r.t.~$x$ is positive anywhere for~$t_0$ if $F$ it is convex.
 }
 \end{figure*}
-Next we consider a simple 1D example to illustrate the effectiveness of the GNC flow.
-In particular, we use the smoothed GMM corresponding to the energy
+Next, we consider a simple 1D example to illustrate the effectiveness of the GNC flow.
+In particular, we use a smoothed GMM corresponding to the energy
 \begin{align} \label{eq:gmmEx}
 F(x,t)=-\log\left(\sum_{i=1}^5 w_i G\left(\mu_i,\sigma_i^2+t\right)(x)\right)
 \end{align}
@@ -592,7 +597,7 @@ Further, we use a fixed linear schedule from the initial~$\hatt_0$ to $\tminh$.
 % Note that we perform only a single proximal-gradient step on every energy~$E(\hatt_i)$ since the energies smoothly change along~$\hatt$ for large enough~$n$.
 % For selecting the step sizes, we consider Tweedie's identity as in \secref{sec:gnc}.
 % In particular, Tweedie's formula states that a gradient step on the log density of noisy images (degraded by additive Gaussian noise) scaled by the variance results in the conditional mean squared estimator.
-% Using the training objective~\eqref{eq:losslog}, our priors learned to approximate the negative log-density of noisy image patches for any smoothing parameter~$\widetilde{t}$.
+% Using the training objective~\eqref{eq:losslog}, our priors learned to approximate the negative log density of noisy image patches for any smoothing parameter~$\widetilde{t}$.
 % Thus, we obtain an approximation of the conditional mean estimator by setting the step size to an estimate of the variance~$\eta_i=\exp(\hatt_i)$.
 % Note that the proximal mapping in~\eqref{eq:fixedScheme} ensures data consistency and thereby frequently reintroduces some noise into~$\vx_{i+1}$.
 
@@ -704,11 +709,11 @@ However, in terms of PSNR score, the learned VN outperforms the other approaches
 
 % -----------------------------------------------------------------------------------------------------
 \section{Conclusion}
-In this work, we drew connections between diffusion-based models and the GNC principle by taking on the perspective of energies -- the negative log-density.
-We observed that adding noise with increasing leads to smoother and more convex energies.
-To account for this smoothing effect, we extended the FoE prior by using 2D activation functions and proposed learning the joint density of noisy-images and smoothing parameters using SM.
-Using this framework, the learned priors can be easily incorporated in solving inverse problems, e.g., by MAP estimation.
-Finally, the continuous differentiability w.r.t.~both arguments enabled an analysis of different smoothing schedule selections.
+In this work, we drew connections between diffusion-based models and the GNC principle by taking on the perspective of energies.
+We observed that adding noise with increasing variance leads to smoother and more convex energies.
+To account for this smoothing effect, we extended the FoE prior by using 2D activation functions and proposed learning the joint density of noisy images and smoothing parameters using SM.
+These priors can be easily incorporated into existing approaches for solving inverse problems such as MAP estimation.
+The continuous differentiability w.r.t.~both arguments of the proposed priors enabled an analysis of different smoothing schedule selection methods.
 
 
 \bibliography{references}
