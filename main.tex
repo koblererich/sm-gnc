@@ -276,7 +276,7 @@ The key observation is that although the data becomes noisier with increasing~$t
 \[
 \pdf{\rvy\vert\rt}(\vy\vert t)=\left(\pdf{\rvx}\ast G(\vec{0},t\id)\right)(\vy)
 \]
-gets smoother due to the convolution with a Gaussian density~$G(0,t\id)$ and its associated energy~$F(\vy,t)=-\log\pdf{\rvy\vert\rt}(\vy,t)$ gets more \emph{convex} (in fact more quadratic), see the left plot in Figure~\ref{fig:gmmOptimization}.
+gets smoother due to the convolution with a Gaussian density~$G(\vec{0},t\id)$ and its associated energy~$F(\vy,t)=-\log\pdf{\rvy\vert\rt}(\vy,t)$ gets more \emph{convex} (in fact more quadratic), see the left plot in Figure~\ref{fig:gmmOptimization}.
 Next, we prove that there indeed exists a lower bound on the variance~$\widetilde{t}$ such that the energy of the conditional density is convex for~$t\geq\widetilde{t}$.
 
 Let $G(\bm{\mu},\Sigma)$ denote a multivariate Gaussian probability density with mean~$\bm{\mu}\in\R^d$ and symmetric positive definite covariance matrix~$\Sigma\in\R^{d\times d}$, which reads as
@@ -327,7 +327,7 @@ Third, the initial problem is efficiently solved due to increased smoothness and
 Then, the parameter is reduced such that the energy becomes gradually more non-convex and is in turn minimized starting from the previous solution.
 The process is repeated until~$t\to0$.
 
-Comparing score-based generative models to GNC, we observe the following similarities.
+Comparing denoising score-based models to GNC, we observe the following similarities.
 First, the score networks also approximate a one-parameter family of the gradient of associated energies.
 Second, the schedule of the smoothing parameter is frequently a priori fixed.
 Finally, as we proved above, there exists a smoothing parameter such that the associated energy becomes convex in most practical cases.
@@ -362,7 +362,7 @@ Approximately minimize current energy~$F(\cdot,t_i)$ using single step
 \caption{Left: Illustration of the 1D example energy~\eqref{eq:gmmEx} using gray lines for different~$t\in[10^{-4},1]$.
 Center: Visualization of the rate of trajectories attaining the global minimum at~$x=\frac{1}{2}$ using~$N=1\ 000$ equally spaced initial points for different~$t_0$ and~$I$.
 The larger the initial smoothing~$t_0$, the fewer steps are required to obtain the perfect rate.
-Right: Smallest second derivative of~$F$ w.r.t.~$x$ for different~$t_0$. TOOD: convex and non-convex.
+Right: Smallest second derivative of~$F$ w.r.t.~$x$ for different~$t_0$.
 }
 \end{figure*}
 Next, we consider a simple 1D example to illustrate the effectiveness of the GNC flow.
@@ -406,7 +406,7 @@ The underlying idea is that every convolution kernel~$k_i$ specializes on a cert
 The non-linear functions~$\phi_i$ are typically learnable and implemented by simple parametric functions~\citep{RoBl09,ChRa14} or weighted radial basis functions~\citep{ChPo16,KoKl17}.
 
 \subsubsection{Extending the Fields of Experts}
-Due to the simplicity of the FoE prior a natural approach to include the conditioning concept of SBGMs is by affecting the potential functions to learn conditional prior models.
+Due to the simplicity of the FoE prior a natural approach to include the conditioning concept of SBGMs is by affecting the potential functions to learn joint prior models.
 In detail, the extended FoE reads as
 \begin{align}\label{eq:r1}
 R_1(\vx,t) = \scal{\vec{1}}{\left(\Phi_1(\cdot, t) \circ K_1\right)(\vx)},
@@ -435,13 +435,13 @@ Here, we elaborate on how to fit the parameters of the previously defined regula
 For our previously defined degradation model, the joint density function reads as
 \begin{align*}
 \pdf{\rvy,\rt}(\vy,t) &= \left(\pdf{\rvx}\ast G(\vec{0},t\id)\right)(\vy) \pdf{\rt}(t)\\
-&\propto \E_{\vx\sim\dist{X}}\left[\exp\left(-\frac{\norm{\vy-\vx}_2^2}{2 t}\right)\right] \pdf{\rt}(t),
+&\propto \E_{\vx\sim\dist{\rvx}}\left[\exp\left(-\frac{\norm{\vy-\vx}_2^2}{2 t}\right)\right] \pdf{\rt}(t),
 \end{align*}
 where $\pdf{\rt}$ is the prior of the smoothing parameter.
 Then, the objective function of (explicit) score matching is given by
 \begin{align} \label{eq:jsm}
 &J_\mathrm{SM}(\theta) = \\
-&\hspace{1ex}\E_{\vy,t\sim\dist{Y,T}}\left[\tfrac12\norm{\nabla R_L(\vy,t;\theta) -\left(- \nabla\log p_{\rvy,T}(\vy,\rt)\right)}_M^2\right], \notag
+&\hspace{1ex}\E_{\vy,t\sim\dist{\rvy,\rt}}\left[\tfrac12\norm{\nabla R_L(\vy,t;\theta) -\left(- \nabla\log p_{\rvy,\rt}(\vy,t)\right)}_M^2\right], \notag
 \end{align}
 where $\nabla$ denotes the full gradient of a function and an additional index denotes the gradient w.r.t. only this variable and 
 $M\in\R^{d+1\times d+1}$ is a positive definite block-diagonal matrix, i.e.,
@@ -454,8 +454,8 @@ t\id & \vec{0} \\
 By applying the metric, we obtain
 \begin{align}\label{eq:jsmParts}
 &J_\mathrm{SM}(\theta)=\\
-&\hspace{1ex}\E_{\vy,t\sim\dist{Y,T}}\Big[\tfrac{t}{2}\norm{\nabla_\vy R_L(\vy,t;\theta) -\left(- \nabla_\vy\log p_{Y,T}(\vy,t)\right)}_2^2 \notag\\
-&\hspace{6ex}+\tfrac12\left(\tfrac{\partial}{\partial t}R_L(\vy,t;\theta) -\left(-\tfrac{\partial}{\partial t}\log p_{Y,T}(\vy,t)\right)\right)^2m_t\Big].\notag
+&\hspace{1ex}\E_{\vy,t\sim\dist{\rvy,\rt}}\Big[\tfrac{t}{2}\norm{\nabla_\vy R_L(\vy,t;\theta) -\left(- \nabla_\vy\log p_{\rvy,\rt}(\vy,t)\right)}_2^2 \notag\\
+&\hspace{6ex}+\tfrac12\left(\tfrac{\partial}{\partial t}R_L(\vy,t;\theta) -\left(-\tfrac{\partial}{\partial t}\log p_{\rvy,\rt}(\vy,t)\right)\right)^2m_t\Big].\notag
 \end{align}
 Note that~$J_\mathrm{SM}$ decouples into a score matching objective on noisy images~$\vy$ and the smoothing parameter~$t$; the metric (in particular~$m_t>0$) enables balancing of both terms.
 The scaling of the first term by~$t$ is a common variance reduction technique in denoising SM~\citep{SoEr19,HuLi21}.
@@ -464,7 +464,7 @@ To avoid the computation of the expectation over the true data in the gradient o
 In addition, we replace the score matching objective w.r.t.~$t$ by its implicit pendant and get
 \begin{align*}
 &J_\mathrm{SM}(\theta)=\\
-&\hspace{1ex}\E_{\vx,\vy,t\sim\dist{X,Y,T}}\left[\tfrac{t}{2}\norm{\nabla_\vy R_L(\vy,t;\theta) -\tfrac{1}{t}(\vy-\vx)}_2^2 \right.\\
+&\hspace{1ex}\E_{\vx,\vy,t\sim\dist{\rvx,\rvy,\rt}}\left[\tfrac{t}{2}\norm{\nabla_\vy R_L(\vy,t;\theta) -\tfrac{1}{t}(\vy-\vx)}_2^2 \right.\\
 &\hspace{5ex}+ \left. \tfrac{m_t}{2}\left(\left(\tfrac{\partial}{\partial t}R_L(\vy,t;\theta)\right)^2 -2\tfrac{\partial^2}{\partial t^2}R_L(\vy,t;\theta)\right)\right] + C,
 \end{align*}
 where $C$ is an additive constant.
@@ -473,7 +473,7 @@ To further simply the objective, we perform the change of variables~$\vy=\vx+\sq
 Then, we get the equivalent loss function
 \begin{align} \label{eq:loss}
 &J(\theta)=\\
-&\hspace{1ex}\E_{\vx,\vn,t\sim\dist{X,N,T}}\tfrac{1}{2}\left[\norm{\sqrt{t}\nabla_\vy R_L(\vy,t;\theta) -\vn}_2^2\right. \notag\\ 
+&\hspace{1ex}\E_{\vx,\vn,t\sim\dist{\rvx,\rvn,\rt}}\tfrac{1}{2}\left[\norm{\sqrt{t}\nabla_\vy R_L(\vy,t;\theta) -\vn}_2^2\right. \notag\\ 
 &\hspace{9ex}\left.+m_t\left(\left(\tfrac{\partial}{\partial t}R_L(\vy,t;\theta)\right)^2 -2\tfrac{\partial^2}{\partial t^2}R_L(\vy,t;\theta)\right)\right]. \notag
 \end{align}
 In contrast to typical denoising score matching-based loss functions~\citep{SoEr19,HoJa20}, this loss introduces a regularization along the smoothing direction~$t$.
@@ -487,7 +487,7 @@ Therefore, we facilitate the logarithmic reparametrization~$\hatt=\log(t)$, $\tm
 Then, the domain~$\widehat{\T}$ is on the negative halfspace and the loss~\eqref{eq:loss} changes to
 \begin{align} \label{eq:losslog}
 &\widehat{J}(\theta)=\\
-&\hspace{1ex}\E_{\vx,\vn,\hatt\sim\dist{X,N,\hatt}}\frac12\Bigg[\norm{e^{\hatt/2}\nabla_\vy R_L(\vy,\hatt;\theta) -\vn}_2^2 \notag\\
+&\hspace{1ex}\E_{\vx,\vn,\hatt\sim\dist{\rvx,\rvn,\widehat{\rt}}}\frac12\Bigg[\norm{e^{\hatt/2}\nabla_\vy R_L(\vy,\hatt;\theta) -\vn}_2^2 \notag\\
 &\hspace{8ex}+ m_t\left(\left(\tfrac{\partial}{\partial\hatt}R_L(\vy,\hatt;\theta)\right)^2 -2\tfrac{\partial^2}{\partial \hatt^2}R_L(\vy,\hatt;\theta)\right)\Bigg]. \notag
 \end{align}
 We highlight that the gradient and the Hessian are measured on the logarithmic domain to avoid intensive regularization toward~$\tmin$.
@@ -527,7 +527,7 @@ x_i &\text{if } A_{ii} = 1\\
 z_i &\text{else}
 \end{cases},
 \]
-where~$\delta$ is the indicator function of the null 
+where~$\delta$ is the indicator function of~$\{\vec{0}\}$. 
 To utilize the statistical knowledge of our learned prior~$R_L$, we next describe suitable ways to handle the additional smoothing parameter~$\hatt$.
 
 \subsection{Joint Optimization} \label{sec:jointOptimization}
@@ -619,7 +619,7 @@ Interestingly, this observation relates the successful trainable non-linear reac
 Thus, VNs -- with temporally changing parameters across the steps -- can be interpreted as a learned proximal-gradient scheme on gradually more non-convex energies.
 This relation enables an unsupervised pretraining of the prior advocated in TNRDs or VNs, followed by a task-specific fine-tuning of either just the smoothing schedule or the entire model.
 
-In contrast to the two previous approaches, here the only hyperparameter is the number of steps~$n$, which is typically constrained by the time budget in applications.
+In contrast to the two previous approaches, here the only hyperparameter is the number of steps~$I$, which is typically constrained by the time budget in applications.
 Moreover, if only the smoothing schedule and the step sizes are learned, just a few paired training samples are required for supervised learning due to the small parameter space.
 
 \begin{figure*}[th!]
@@ -665,14 +665,14 @@ Moreover, we see the GNC effect also for~$R_2$ and $R_3$ not only since the pote
 \begin{figure}[t!]
 \centering
 \begin{tikzpicture}[every node/.append style={inner sep=1mm}, label/.style={draw=black,fill=white, inner sep=.5ex,rounded corners=.25ex}]
-\node[anchor=center] (x) at (0,0) {\includegraphics[width=.82\linewidth]{figures/results/foe_steps}};
+\node[anchor=center] (x) at (0,0) {\includegraphics[width=.9\linewidth]{figures/results/foe_steps}};
 % \draw[black]
 \draw[black, very thick] (0,0+.1) -| (x.north west) -- node[midway,label,yshift=-.75mm] {Denoising} (x.north east) |- cycle;
 
 \draw[black, very thick] (x.south west) -- node[midway,label,yshift=.75mm] {Inpainting} (x.south east) |- (0,.08) -| cycle;
 \end{tikzpicture}
 \caption{
-Visualization of the average global minimum attainment rate and the PSNR over the BSDS68 test set for the GNC flow (left, \eqref{eq:fixedScheme}) and the proposed joint optimization (right, \Algref{alg:jointMinimization}) for image denoising (top) and inpainting (bottom).
+Visualization of the average global minimum attainment rate and the PSNR over the BSDS68 test set for the GNC flow (left, \eqref{eq:fixedScheme}) and the proposed joint optimization (right, \Algref{alg:jointMinimization}) for image denoising (top) and inpainting (bottom) using~$\eta=1$.
 % In both tasks, the considered algorithms perform similarly.
 % For sufficiently large initial smoothing~$t_0$ and number of steps~$I$, both algorithms yield the perfect attainment rate.
 % However, the PSNR score is maximized by stopping early due to an optimization and modeling trade-off.
@@ -691,7 +691,7 @@ The left plot depicts the average energy for each step of the BSDS68 dataset, wh
 \label{fig:allThreeComparison}
 \end{figure}
 Next, we compare the different inference techniques for solving inverse problems using the learned~$R_L$.
-In \figref{fig:algComparison}, the behavior of the GNC flow~(\Secref{sec:predefinedSchedule}) and the joint optimization~(\Secref{sec:jointOptimization}) is compared for image denoising (top, $\sigma=0.1$) and inpainting (bottom, random missing rate~$80\%$).
+In \figref{fig:algComparison}, the behavior of the GNC flow~(\Secref{sec:predefinedSchedule}) and the joint optimization~(\Secref{sec:jointOptimization}) is compared for image denoising (top, $\sigma=0.1$) and inpainting (bottom, $80\%$ missing pixels).
 In analogy to the 1D introductory example, the attainment rate of the global minimal energy is presented in the top row of each block to show the effectiveness of the GNC principle.
 In detail, it is the average across the BSDS68~\cite{MaFo01} test set for a broad range of initial smoothing~$t_0$ and number of steps~$I$.
 Comparing both algorithms, we observe only minor differences and the optimal attainment rate is obtained for sufficiently large initial smoothing~$t_0$ and number of steps~$I$.
