@@ -1,0 +1,295 @@
+\documentclass[a1paper,fleqn]{betterportraitposter}
+
+% PACKAGES
+\usepackage[none]{hyphenat}
+\usepackage{lipsum}
+
+\usepackage{tikz}
+\usepackage{wrapfig}
+
+%%%% Uncomment the following commands to customise the format
+
+%% Setting the height of the top and bottom (colored) bars
+%% Uncomment either of the following lines it you want to change the defaults heights of the top or bottom bars.
+% \setlength{\mainfindingheight}{0.5\paperheight} % Top bar
+% \setlength{\bottomboxheight}{0.10\paperheight} % Bottom bar
+
+%% Setting the page margin
+
+%% Changing font sizes
+% Text font
+%\renewcommand{\fontsizestandard}{\fontsize{28}{35} \selectfont}
+% Main column font
+%\renewcommand{\fontsizemain}{\fontsize{28}{35} \selectfont}
+% Title font
+%\renewcommand{\fontsizetitle}{\fontsize{28}{35} \selectfont}
+% Author font
+%\renewcommand{\fontsizeauthor}{\fontsize{28}{35} \selectfont}
+% Institution font
+%\renewcommand{\fontsizeauthor}{\fontsize{28}{35} \selectfont}
+% Section font
+%\renewcommand{\fontsizesection}{\fontsize{28}{35} \selectfont}
+
+%% Changing font sizes for a specific text segment
+% Place the text inside brackets:
+% {\fontsize{28}{35} \selectfont Your text goes here}
+
+%% Changing colours
+% Background of main claim box (options include: imperialblue, empirical, theory, methods and intervention
+% Default is empirical
+% \renewcommand{\maincolumnbackgroundcolor}{intervention}
+
+% Font on main and bottom boxes
+% \renewcommand{\maincolumnfontcolor}{empirical}
+
+\definecolor{mygray}{RGB}{66, 66, 65}
+\definecolor{myblue}{RGB}{0, 79, 159}
+\renewcommand{\maincolumnbackgroundcolor}{mygray}
+
+\renewcommand{\emph}[1]{\textbf{\color{myblue}#1}}
+
+\input{../math_commands.tex}
+% custom commands
+% \newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\renewcommand{\P}{\mathbb{P}}
+\newcommand{\C}{\mathcal{C}}
+\renewcommand{\L}{\mathrm{L}}
+\newcommand{\dx}{\mathrm{d}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\Z}{\mathcal{Z}}
+\newcommand{\T}{\mathcal{T}}
+\newcommand{\id}{\mathrm{Id}}
+\newcommand{\norm}[1]{\left\Vert#1\right\Vert}
+\newcommand{\scal}[2]{\left\langle#1,#2\right\rangle}
+\renewcommand{\vec}[1]{\mathbf{#1}}
+\newcommand{\diameter}{\mathrm{diam}}
+\newcommand{\prox}{\mathrm{prox}}
+\newcommand{\proj}{\mathrm{proj}}
+\newcommand{\tmin}{t_\mathrm{min}}
+\newcommand{\tmax}{t_\mathrm{max}}
+% \newcommand{\hatt}{\widehat{t}}
+\def\hatt{{\widehat{t}}}
+\newcommand{\tminh}{\hatt_\mathrm{min}}
+\newcommand{\tmaxh}{\hatt_\mathrm{max}}
+
+% \newcommand{\E}{\mathbb{E}}
+\newcommand{\dist}[1]{\mathcal{P}_{#1}}
+\newcommand{\pdf}[1]{p_{#1}}
+\newcommand{\g}{\vert}
+\newcommand{\normal}{\mathcal{N}}
+
+\newcommand{\VP}{\mathrm{VP}}
+\newcommand{\VE}{\mathrm{VE}}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsthm}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+% \newtheorem{proposition}[theorem]{Proposition}
+% \newtheorem{lemma}[theorem]{Lemma}
+% \newtheorem{corollary}[theorem]{Corollary}
+% \theoremstyle{definition}
+% \newtheorem{definition}[theorem]{Definition}
+% \newtheorem{assumption}[theorem]{Assumption}
+% \theoremstyle{remark}
+% \newtheorem{remark}[theorem]{Remark}
+
+
+\begin{document}	
+
+%% Top box with main message
+\mainfinding{\textbf{Denoising Score Matching Image Priors}}
+
+
+%% Title, author and affiliations section
+\titlebox{
+    \title{}  
+    \author{Erich Kobler$^\ast$ and Thomas Pock$^\dagger$ \\
+    {\LARGE
+    $^\ast$Department of Neuroradiology, University Hospital Bonn (\texttt{erich.kobler@ukbonn.de}) \hspace{1em} $^\dagger$Institute of Computer Graphics and Vision, Graz University of Technology 
+    }}
+}
+% End of title stuff
+    
+    
+%% Central box with traditional content
+\centerbox{
+{\fontsizesection\textbf{Abstract}\hspace*{1em}}
+Recently, denoising score matching (DSM) and denoising diffusion-based (DD) models yielded remarkable results in imaging sciences.
+These models are trained to approximate the gradient of the logarithmic data density perturbed by additive Gaussian noise, which results in smoother and more convex densities for increasing noise variance.
+Thus, these models learn a graduated non-convexity heuristic.
+To further exploit this effect, we propose DSM image priors that are learned on the joint density of (noisy) images and associated variance using score matching.
+Facilitating these priors in the variational approach to inverse problems enables efficient optimization strategies -- even joint optimization w.r.t.~image and variance.
+Moreover, learning the variance schedule of an unrolled proximal gradient scheme for specific tasks results in variational networks.
+
+
+\begin{multicols}{2}
+\section{A Graduated Non-convexity View of DSM-based Models}
+Let~$\X\subset\R^d$ be bounded and consider a dataset of samples~$\{\vx_i\}_{i=1}^n\subset\X$ from the true data distribution~$\dist{\rvx}$ with density~$\pdf{\rvx}$.
+Both noise-conditional score matching~(NCSM) and denoising diffusion probabilistic models~(DDPM) consider a smoothed data density
+% The conditioning is either directly on the variance (NCSM) or a diffusion time (DDPM), encoding the variance.
+% For simplicity we further assume the first case.
+% Then, the conditional density of the perturbed noisy data reads as
+\begin{align*}
+\pdf{\rvx\vert\rt}(\vx\vert t) &= \left(\pdf{\rvx}\ast G(\vec{0},t\id)\right)(\vx)\propto \E_{\widehat{\vx}\sim\dist{\rvx}}\left[\exp\left(-\tfrac{\norm{\widehat{\vx}-\vx}_2^2}{2 t}\right)\right]
+\end{align*}
+and train neural networks~$S$ to predict the score, i.e., $S(\vx,t)\approx\nabla_\vx\log\pdf{\rvx\vert\rt}(\vx,t)$.\\[-.5em]
+
+\textbf{Observe:}
+Although the data becomes noisier with \emph{increasing variance}~$t$, the corresponding smooth probability density~$\pdf{\rvx\vert\rt}$ gets \emph{smoother} and its associated energy~$F(\vx,t)=-\log\pdf{\rvx\vert\rt}(\vx\vert t)$ gets more \emph{convex}.\\[-1em]
+
+\begin{theorem}
+Assuming~$\diameter(\X)<\infty$ and consindering $\pdf{}=\frac{1}{n}\sum_{i=1}^n \delta_{\vx_i}$, there exists a~$\widetilde{t}\in(0,\infty)$ such that the smoothed energy
+\[
+F(\vx,t)\coloneqq -\log \big( (p \ast G(\vec{0}, t\id))(\vx)\big)
+\]
+is convex w.r.t.~$\vx$ for all~$t\geq\widetilde{t}$.
+\end{theorem}
+
+Thus, the energy~$F(\vx,t)$ becomes easier to optimize for increasing~$t$.
+This principle has already been exploited by the \emph{graduated non-convexity} heuristic:
+\begin{enumerate}
+\item Approximate true energy by one-parameter family~$F(\vx,t)$ for~$t\to0$
+\item Choose initial~$t_0$ such that $F(\cdot,t_0)$ convex and decreasing sequence~$\{t_i\}_{i=1}^I$
+\item Repeat for $i=1,2,\ldots,I$
+\[
+    \vx_i \approx \argmin_\vx F(\vx,t_i) \text{ starting from } \vx_{i-1}
+\]
+\end{enumerate}
+
+\textbf{Observe:}
+If a \emph{single gradient step} is performed in 3., this is equivalent to the \emph{denoising diffusion implicit model}~(DDIM) sampling without diffusion.
+
+\vspace*{1em}
+\textbf{Example:}
+Find global minimum of a Gaussian mixture model~(GMM) using graduated non-convexity heuristic:
+
+\noindent\begin{minipage}{.55\linewidth}
+    \centering
+    \includegraphics[width=.99\linewidth]{../figures/ex_gmm/ex_gmm_func}
+\end{minipage}%
+\noindent\begin{minipage}{.45\linewidth}
+    \centering
+    \includegraphics[width=.99\linewidth]{../figures/ex_gmm/ex_gmm_rate}
+\end{minipage}
+\begin{spacing}{1}
+\LARGE
+\LARGE
+Left: Associated energy~$F(x,t)=-\log\pdf{}(x,t)$. Right top: Rate of start points~$x_0\in[-3,3]$ converging to the global minimum for different initial~$t_0$ and number of iterations~$I$. Right bottom: Illustration of minimal second derivative of~$F(x,t)$ for $x\in[-3,3]$.
+\end{spacing}
+\columnbreak
+
+\section{Learning DSM Image Priors}
+To extend the popular fields of experts image prior to the joint space of images~$\vx$ and variances~$t$, its energy is modeled by alternating convolution operators~$K_j$ and parametric 2D spline activation function~$\Phi_j$, i.e.
+\[
+R_L(\vx,t) = \scal{\vec{1}}{\left(\Phi_L(\cdot,t)\circ K_L\circ\cdots\circ\Phi_1(\cdot, t) \circ K_1\right)(\vx)}.
+\]
+To learn parameters of~$R_L$, we perform score matching on the joint density~$\dist{X,T}$:
+\[
+J_\mathrm{SM}(\theta)=\E_{\vx,t\sim\dist{\rvx,\rt}}\left[\tfrac12\norm{\nabla R_L(\vx,t;\theta) -\left(- \nabla\log p_{\rvx,\rt}(\vx,\rt)\right)}_M^2\right].
+\]
+By applying \emph{DSM for~$\vx$} and \emph{implicit score matching for~$t$} and using the logarithmic reparametrization~$\widehat{t}=\log t$ as well as $\vx=\widehat{\vx}+\exp(\tfrac{\widehat{t}}{2})\vn$, we get
+\begin{align*}    
+J(\theta)=\E_{\widehat{\vx},\vn,\widehat{t}\sim\dist{\widehat{\rvx},\rvn,\widehat{\rt}}}\tfrac12\Bigg[&\norm{e^{\widehat{t}/2}\nabla_\vx R_L(\vx,\widehat{t};\theta) -\vn}_2^2+\\
+&m_t\left(\left(\tfrac{\partial}{\partial\widehat{t}}R_L(\vx,\widehat{t};\theta)\right)^2 -2\tfrac{\partial^2}{\partial \widehat{t}^2}R_L(\vx,\widehat{t};\theta)\right)\Bigg].
+\end{align*}
+This loss \emph{favors} prior energies~$R_L$ that \emph{slowly change} in the direction of~$t$ and are preferably \emph{convex}, which are desirable properties for optimization.
+Moreover, the implicit score matching of~$\widehat{t}$ implements a data-driven regularization technique. 
+\vspace*{-1em}
+\begin{center}
+\begin{tikzpicture}[every node/.append style={inner sep=1mm}, label/.style={draw=black,fill=white, inner sep=.5ex,rounded corners=1ex}]
+
+\node[anchor=south] (r1) at (0,0) {\includegraphics[width=.96\linewidth]{../figures/results/params_foe}};
+\draw[black, very thick, rounded corners] (r1.north east) -- (r1.north west) -- (r1.south west) -- (r1.south east) node[midway,label,yshift=-1.25mm] {$R_1$};
+
+\node[anchor=south] (r2) at (0,-9.5) {\includegraphics[width=.96\linewidth]{../figures/results/params_foedeep}};
+\draw[black, very thick, rounded corners] (r2.north east) -- (r2.north west) -- (r2.south west) -- (r2.south east) node[midway,label,yshift=-1.25mm] {$R_2$};
+\end{tikzpicture}
+\end{center}
+\begin{spacing}{1}
+\LARGE
+Illustration of convolution kernels and corresponding activation functions for a one-layer prior~$R_1$ (top) and two-layer prios~$R_2$ (bottom).
+\end{spacing}
+
+\section{Solving Inverse Problems using~$R_L$}
+We aim at determining~$\rvx$ from an observation~$\rvz=A\rvx+\zeta$.
+The maximum a posteriori estimator amounts to the variational approach\\[-1em]
+% \vspace*{-10em}
+% \begin{wrapfigure}{r}{.4\linewidth}
+% \centering
+% \includegraphics[width=.95\linewidth]{img/plots_denoise_inpaint}
+% \end{wrapfigure}
+\noindent\begin{minipage}[t]{.59\linewidth}
+\vspace{0pt}
+\[
+\min_\vx\, R_L(\vx,\widehat{t}) + D(\vz,A\vx),
+\]
+% where~the data term~$D$ accounts for the noise characteristics of~$\zeta$.
+
+\textbf{What about the additional $\widehat{t}$?}
+\begin{itemize}
+\item \emph{Joint optimization problem:} 
+\[
+\min_{\vx,\widehat{t}}\left\{R_L(\vx,\widehat{t}) + D(\vz,A\vx)\right\}
+\]
+can be efficiently solved using preconditioned proximal gradient descent.\\[-1.5ex]
+\item \emph{Predefined schedule:}\\
+graduated non-convexity heuristic or DDIM\\[-1.5ex]
+\item \emph{Task-specific Learning of Schedule:}
+\end{itemize}
+\end{minipage}%
+\hfill\begin{minipage}[t]{.4\linewidth}
+\vspace{0pt}
+    \begin{flushright}
+        \includegraphics[width=.9\linewidth]{img/plots_denoise}
+    \end{flushright}
+\end{minipage}
+\vspace*{1em}
+\begin{itemize}
+    \item[] This is \emph{equivalent to variational networks} and links them to diffusion-based models.
+\end{itemize}
+\columnbreak
+
+
+\end{multicols}
+}
+% End of central box
+
+
+% Bottom box with QR code
+\bottombox{
+    %% QR code
+    % \qrcode{img/qrcode}{img/smartphoneWhite}{Scan QR code to get the full paper}
+    % Comment out the line below out to hide logo
+    % \hfill\bottomboxlogo{img/logo.eps} % \hfill shifts the logo across so it meets the right hand side margin
+    % Note that \bottomboxlogo takes an optional width argument. It defaults to the following: 
+    \includegraphics[height=2.5cm]{img/ukb-logo.png} 
+    \hfill
+    \includegraphics[height=2.5cm]{img/tug-logo.png} 
+    % \bottomboxlogo[height=3cm]{img/tug-logo.png}
+    % where \textwidth is actually the width of a minipage which is defined in the \bottombox command of
+    % betterportaitposter.cls It's a standard \includegraphics command in there, so easy to change if 
+    % you need to add a border etc.
+}
+% End of bottom box
+
+
+%\qrcode{img/qrcode}{img/smartphoneWhite}{
+%\textbf{Take a picture} to
+%\\download the full paper
+%}
+
+
+%% Compact QR code (comment the previous command and uncomment this one to switch)
+%\compactqrcode{img/qrcode}{
+%\textbf{Take a picture} to
+%\\download the full paper
+%}
+
+%}
+
+\end{document}
