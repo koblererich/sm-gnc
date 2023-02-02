@@ -188,7 +188,7 @@ To extend the popular fields of experts image prior to the joint space of images
 \[
 R_L(\vx,t) = \scal{\vec{1}}{\left(\Phi_L(\cdot,t)\circ K_L\circ\cdots\circ\Phi_1(\cdot, t) \circ K_1\right)(\vx)}.
 \]
-To learn parameters of~$R_L$, we perform score matching on the joint density~$\dist{X,T}$:
+To learn parameters of~$R_L$, we perform score matching on the joint density~$\dist{\rvx,\rt}$:
 \[
 J_\mathrm{SM}(\theta)=\E_{\vx,t\sim\dist{\rvx,\rt}}\left[\tfrac12\norm{\nabla R_L(\vx,t;\theta) -\left(- \nabla\log p_{\rvx,\rt}(\vx,\rt)\right)}_M^2\right].
 \]
